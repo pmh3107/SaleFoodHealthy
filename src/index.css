@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        font-family: "Poppins", system-ui, sans-serif;
+    }
+}
+
+.btnPrimary {
+    @apply flex px-6 py-4 justify-center items-center rounded-[10px] bg-[#202020] text-[#FDFBFA] text-[16px] leading-none font-semibold hover:bg-slate-500;
+}
+
+.inputPrimary {}

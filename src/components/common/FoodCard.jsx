@@ -2,12 +2,13 @@ import PropTypes from "prop-types";
 import { Link } from "react-router-dom";
 
 const FoodCard = ({ image, title, description, price, time, number }) => {
+	console.log(image);
 	const imgPath =
-		"https://plus.unsplash.com/premium_photo-1675798983878-604c09f6d154?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fGZvb2QlMjBoZWFsdGh5fGVufDB8fDB8fHww";
+		"https://plus.unsplash.com/premium_photo-1679503585289-c02467981894?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NjV8fHJlc3RhdXJhbnQlMjBmb29kfGVufDB8fDB8fHww";
 	return (
 		<Link to={"#!"}>
-			<section className="max-w-[300px] p-6 flex flex-col gap-5 justify-center items-center rounded-[10px] bg-[#F8F8F8]">
-				<figure className="w-64 h-64 ">
+			<section className="max-w-[300px] h-[425px] p-6 flex flex-col gap-5 justify-center items-center rounded-[10px] bg-[#F8F8F8]">
+				<figure className="w-64 h-64">
 					<img
 						className="rounded-[10px] w-full h-full object-cover"
 						src={image ? image : imgPath}
@@ -15,22 +16,22 @@ const FoodCard = ({ image, title, description, price, time, number }) => {
 					/>
 				</figure>
 				<div className="flex flex-col gap-5 mt-5">
-					<h2 className="text-[#202020] text-xl font-medium capitalize">
+					<h2 className="text-[#202020] text-xl font-medium capitalize line-clamp-1">
 						{title}
 					</h2>
-					<div className="flex items-center justify-between">
+					<div className="flex items-center justify-between line-clamp-1 gap-2">
 						<p className="text-base font-medium text-[#808080] lowercase">
 							{description}
 						</p>
 						{number && (
-							<span className="text-[#202020] text-base font-medium flex gap-2">
+							<span className="text-[#202020] text-base font-medium flex gap-1">
 								<img
 									src={
 										number >= 4
 											? "/images/dishes-start-green.svg"
 											: "/images/dishes-start.svg"
 									}
-									alt=""
+									alt={number}
 								/>
 								{number}
 							</span>

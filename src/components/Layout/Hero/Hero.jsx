@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 function Hero() {
 	const [currentIndex, setCurrentIndex] = useState(0);
@@ -16,9 +17,9 @@ function Hero() {
 
 		return () => clearInterval(interval);
 	}, [images.length]);
-
+	const navigate = useNavigate();
 	return (
-		<div className="my-32 flex relative">
+		<div className="my-16 flex relative">
 			<img
 				src="/images/hero-icon-left.png"
 				alt=""
@@ -60,14 +61,22 @@ function Hero() {
 					doorstep, we’ve got you covered.
 				</p>
 
-				<div className="flex gap-5">
+				<form
+					className="flex gap-5"
+					onSubmit={(e) => {
+						e.preventDefault();
+						navigate("/SearchPage");
+					}}
+				>
 					<input
 						type="text"
 						placeholder="Enter your delivery location"
 						className="rounded-[10px] border-[1px] border-[#808080] bg-white py-4 px-6 w-[622px]"
 					/>
-					<button className="btnPrimary">Get Started</button>
-				</div>
+					<button type="submit" className="btnPrimary">
+						Get Started
+					</button>
+				</form>
 
 				<article className="flex gap-8 flex-col items-start">
 					<p className="text-[#404040] text-base font-medium">

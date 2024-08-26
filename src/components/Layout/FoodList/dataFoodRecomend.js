@@ -1,7 +1,7 @@
 const foodDataRecomend = [
 	{
 		image:
-			"https://images.unsplash.com/photo-1571759323329-1c22dbf0d9d4?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+			"https://images.unsplash.com/photo-1511690743698-d9d85f2fbf38?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8Zm9vZCUyMGhlYWx0aHl8ZW58MHx8MHx8fDA%3D",
 		title: "Paneer Tikka Rice Bowl",
 		description: "the good bowl",
 		price: 200,
@@ -10,7 +10,7 @@ const foodDataRecomend = [
 	},
 	{
 		image:
-			"https://images.unsplash.com/photo-1608211801510-0b6d4d9f7d3f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+			"https://plus.unsplash.com/premium_photo-1663852297496-c427a58e98c9?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8Zm9vZCUyMGhlYWx0aHl8ZW58MHx8MHx8fDA%3D",
 		title: "Aloo Paratha Curd Meal (2 Pcs)",
 		description: "lunch box",
 		price: 169,
@@ -19,7 +19,7 @@ const foodDataRecomend = [
 	},
 	{
 		image:
-			"https://images.unsplash.com/photo-1619215066000-cfaf1be0f273?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+			"https://plus.unsplash.com/premium_photo-1675798983878-604c09f6d154?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTN8fGZvb2QlMjBoZWFsdGh5fGVufDB8fDB8fHww",
 		title: "Baked Pizza Wrap - Vegetarian",
 		description: "faasos - wraps & rolls",
 		price: 209,
@@ -28,7 +28,7 @@ const foodDataRecomend = [
 	},
 	{
 		image:
-			"https://images.unsplash.com/photo-1610888352857-f7a2001fc1d1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=400",
+			"https://images.unsplash.com/photo-1449831438585-6f419654d73e?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fGZvb2QlMjBoZWFsdGh5fGVufDB8fDB8fHww",
 		title: "Mixed Veg Fried Rice With Dry Fruits",
 		description: "mfc restaurant",
 		price: 180,

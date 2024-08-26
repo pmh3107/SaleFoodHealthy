@@ -7,7 +7,7 @@ import { Link } from "react-router-dom";
 
 export default function Header() {
 	return (
-		<header className="max-w-screen-2xl mx-auto px-12 mt-16">
+		<header className="max-w-screen-2xl mx-auto px-12 my-16">
 			<nav
 				className="flex justify-between items-center"
 				aria-label="Main Navigation"

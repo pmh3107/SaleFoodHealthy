@@ -6,7 +6,7 @@ const FoodCard = ({ image, title, description, price, time, number }) => {
 	const imgPath =
 		"https://plus.unsplash.com/premium_photo-1679503585289-c02467981894?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NjV8fHJlc3RhdXJhbnQlMjBmb29kfGVufDB8fDB8fHww";
 	return (
-		<Link to={"#!"}>
+		<Link to={"/DetailDishes"}>
 			<section className="max-w-[300px] h-[425px] p-6 flex flex-col gap-5 justify-center items-center rounded-[10px] bg-[#F8F8F8]">
 				<figure className="w-64 h-64">
 					<img

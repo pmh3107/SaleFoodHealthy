@@ -12,4 +12,10 @@
     @apply flex px-6 py-4 justify-center items-center rounded-[10px] bg-[#202020] text-[#FDFBFA] text-[16px] leading-none font-semibold hover:bg-slate-500;
 }
 
-.inputPrimary {}
+.btnActive {
+    @apply flex px-7 py-4 items-center justify-center rounded-[20px] bg-[#FC8019] text-white text-base font-medium
+}
+
+.btnSecondary {
+    @apply flex px-7 py-4 items-center justify-center rounded-[20px] border-[1.5px] border-[#FC8019] bg-white text-black text-base font-medium
+}

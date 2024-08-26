@@ -9,7 +9,7 @@ const FoodList = () => {
 				<h2 className="text-[#202020] text-2xl font-medium">
 					Nearby Restaurants
 				</h2>
-				<div className="flex flex-wrap gap-5">
+				<div className="flex flex-wrap">
 					{foodData.map((item, index) => (
 						<FoodCard
 							key={index}

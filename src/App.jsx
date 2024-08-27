@@ -4,7 +4,7 @@ import SearchPage from "./pages/searchPage/SearchPage";
 import ClientPage from "./pages/ClientPage";
 import DishesPage from "./pages/dishesPage/DishesPage";
 import PaymentPage from "./pages/paymentPage/PaymentPage";
-
+import LoginPage from "./pages/loginPage/LoginPage";
 export default function App() {
 	return (
 		<BrowserRouter>
@@ -16,6 +16,7 @@ export default function App() {
 					<Route path="/PaymentPage" element={<PaymentPage />} />
 					<Route path="*" element={<h1>404</h1>} />
 				</Route>
+				<Route path="/LoginPage" element={<LoginPage />} />
 			</Routes>
 		</BrowserRouter>
 	);

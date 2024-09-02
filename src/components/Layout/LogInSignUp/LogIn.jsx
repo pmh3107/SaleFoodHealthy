@@ -26,7 +26,6 @@ export default function Login() {
 		const data = { email, password };
 
 		try {
-			// Thay thế bằng API endpoint của bạn
 			const response = await fetch("https://your-api-endpoint.com/login", {
 				method: "POST",
 				headers: {
@@ -49,7 +48,7 @@ export default function Login() {
 	};
 
 	return (
-		<div className="px-10">
+		<div className="px-12">
 			<form onSubmit={handleSubmit} className="flex flex-col gap-6">
 				<div className="flex flex-col">
 					<input
@@ -80,6 +79,12 @@ export default function Login() {
 					className="mt-6 text-white font-medium text-2xl bg-[#FC8019] px-6 py-3 rounded-[10px] hover:opacity-70"
 				>
 					Log In
+				</button>
+				<span className="text-xl font-normal text-[#202020] opacity-50 w-full text-center">
+					or
+				</span>
+				<button className="font-medium text-xl flex justify-center items-center gap-2 text-[#202020] hover:opacity-75">
+					LogIn with Google <img src="/images/google-icon.svg" alt="" />
 				</button>
 			</form>
 		</div>

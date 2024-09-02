@@ -5,6 +5,11 @@ import ClientPage from "./pages/ClientPage";
 import DishesPage from "./pages/dishesPage/DishesPage";
 import PaymentPage from "./pages/paymentPage/PaymentPage";
 import LoginPage from "./pages/loginPage/LoginPage";
+import AdminPage from "./pages/AdminPage";
+import MainHomeAdminPage from "./pages/mainHomeAdminPage/MainHomeAdminPage";
+import AdminProduct from "./pages/adminProductPage/AdminProduct";
+import AdminUser from "./pages/adminUserPage/AdminUser";
+import AdminOrder from "./pages/adminOrderPage/AdminOrder";
 export default function App() {
 	return (
 		<BrowserRouter>
@@ -17,6 +22,14 @@ export default function App() {
 					<Route path="*" element={<h1>404</h1>} />
 				</Route>
 				<Route path="/LoginPage" element={<LoginPage />} />
+
+				<Route path="/admin/" element={<AdminPage />}>
+					<Route path="/admin/home" element={<MainHomeAdminPage />} />
+					<Route path="/admin/product" element={<AdminProduct />} />
+					<Route path="/admin/user" element={<AdminUser />} />
+					<Route path="/admin/order" element={<AdminOrder />} />
+					<Route path="*" element={<h1>404</h1>} />
+				</Route>
 			</Routes>
 		</BrowserRouter>
 	);

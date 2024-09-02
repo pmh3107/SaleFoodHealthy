@@ -52,7 +52,7 @@ export default function Header() {
 					>
 						<img src="/images/icon/Cart.svg" alt="Cart" />
 					</a>
-					<Link to={"#!"} className="btnPrimary">
+					<Link to={"/LoginPage"} className="btnPrimary">
 						Sign In
 					</Link>
 				</div>

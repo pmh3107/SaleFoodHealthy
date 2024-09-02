@@ -10,7 +10,7 @@ export default function LoginPage() {
 
 	return (
 		<>
-			<header className="max-w-screen-2xl mx-auto px-12 py-4">
+			<header className="max-w-screen-2xl mx-auto px-12 py-10">
 				<Link
 					to={"/"}
 					className="text-[#FC8019] font-medium text-lg hover:text-[#F54B4B]"
@@ -19,7 +19,7 @@ export default function LoginPage() {
 					Back to HomePage
 				</Link>
 			</header>
-			<main className="max-w-screen-2xl mx-auto px-12 h-screen flex items-center justify-center">
+			<main className="max-w-screen-2xl mx-auto px-12 h-screen flex">
 				<div className="w-full h-[80vh] rounded-[10px] shadow-md flex">
 					<figure className="w-1/2 h-full">
 						<img

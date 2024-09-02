@@ -2,12 +2,15 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { createNewUser } from "../../../service/Authentication";
 
 export default function SignUp() {
 	const [name, setName] = useState("");
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
+	const [address, setAddress] = useState("");
+	const [phone, setPhone] = useState("");
 	const navigate = useNavigate();
 
 	const handleSubmit = async (event) => {
@@ -30,27 +33,18 @@ export default function SignUp() {
 			return;
 		}
 
-		const data = { name, email, password };
+		const userData = { name, email, address, phone };
 
 		try {
-			// Thay thế bằng API endpoint của bạn
-			const response = await fetch("https://your-api-endpoint.com/signUp", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(data),
-			});
-
-			if (response.ok) {
-				// Xử lý đăng ký thành công, ví dụ: chuyển hướng
-				navigate("/login");
+			const user = await createNewUser(email, password, userData);
+			if (user) {
+				toast("Successfully signed up. Please log in to continue.");
+				navigate("/LoginPage");
 			} else {
-				// Xử lý lỗi
-				toast.error("SignUp failed. Please try again.");
+				toast.error("Sign up failed. Please try again.");
 			}
 		} catch (error) {
-			console.log(error);
+			console.error(error);
 			toast.error("An error occurred. Please try again later.");
 		}
 	};
@@ -79,6 +73,30 @@ export default function SignUp() {
 						value={email}
 						onChange={(e) => setEmail(e.target.value)}
 						placeholder="Enter your email ...."
+						className="border-b-2 border-[#808080] px-4 py-3 mt-1 text-[#202020] focus:outline-none"
+					/>
+				</div>
+				<div className="flex flex-col">
+					<input
+						type="phone"
+						id="signUp-phone"
+						name="phone"
+						required
+						value={phone}
+						onChange={(e) => setPhone(e.target.value)}
+						placeholder="Enter your phone number ...."
+						className="border-b-2 border-[#808080] px-4 py-3 mt-1 text-[#202020] focus:outline-none"
+					/>
+				</div>
+				<div className="flex flex-col">
+					<input
+						type="text"
+						id="signUp-address"
+						name="address"
+						required
+						value={address}
+						onChange={(e) => setAddress(e.target.value)}
+						placeholder="Enter your address ...."
 						className="border-b-2 border-[#808080] px-4 py-3 mt-1 text-[#202020] focus:outline-none"
 					/>
 				</div>

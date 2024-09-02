@@ -1,13 +1,8 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { NavLink, Outlet, Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import Login from "../../components/Layout/LogInSignUp/LogIn";
-import SignUp from "../../components/Layout/LogInSignUp/SignUp";
 
 export default function LoginPage() {
-	const [isLogin, setIsLogin] = useState(true);
-
 	return (
 		<>
 			<header className="max-w-screen-2xl mx-auto px-12 py-10">
@@ -34,24 +29,28 @@ export default function LoginPage() {
 							Welcome to <span className="text-[#FC8019]">Fresh Food</span> !
 						</h2>
 						<ul className="flex items-center gap-8 mb-10 mx-auto">
-							<li
-								className={`px-4 cursor-pointer border-b-2 ${
-									isLogin ? "border-[#202020]" : "border-transparent"
-								} text-2xl text-[#202020] font-medium pb-2`}
-								onClick={() => setIsLogin(true)}
+							<NavLink
+								to="/LoginPage"
+								className={({ isActive }) =>
+									`px-4 cursor-pointer border-b-2 ${
+										isActive ? "border-[#202020]" : "border-transparent"
+									} text-2xl text-[#202020] font-medium pb-2`
+								}
 							>
 								LogIn
-							</li>
-							<li
-								className={`px-4 cursor-pointer border-b-2 ${
-									!isLogin ? "border-[#202020]" : "border-transparent"
-								} text-2xl text-[#202020] font-medium pb-2`}
-								onClick={() => setIsLogin(false)}
+							</NavLink>
+							<NavLink
+								to="/SignUpPage"
+								className={({ isActive }) =>
+									`px-4 cursor-pointer border-b-2 ${
+										isActive ? "border-[#202020]" : "border-transparent"
+									} text-2xl text-[#202020] font-medium pb-2`
+								}
 							>
 								SignUp
-							</li>
+							</NavLink>
 						</ul>
-						{isLogin ? <Login /> : <SignUp />}
+						<Outlet />
 					</section>
 				</div>
 			</main>

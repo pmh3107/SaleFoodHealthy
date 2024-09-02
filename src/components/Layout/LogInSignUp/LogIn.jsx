@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { loginUser } from "../../../service/Authentication";
+import { getUserData } from "../../../service/User";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -23,22 +25,14 @@ export default function Login() {
 			return;
 		}
 
-		const data = { email, password };
-
 		try {
-			const response = await fetch("https://your-api-endpoint.com/login", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify(data),
-			});
-
-			if (response.ok) {
-				// Xử lý đăng nhập thành công, ví dụ: chuyển hướng
-				navigate("/dashboard");
+			const user = await loginUser(email, password);
+			console.log("User logged in:", user.uid);
+			const userData = await getUserData(user.uid);
+			console.log(userData);
+			if (user) {
+				navigate("/", { state: { userData } });
 			} else {
-				// Xử lý lỗi
 				toast.error("Login failed. Please check your credentials.");
 			}
 		} catch (error) {

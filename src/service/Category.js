@@ -1,4 +1,4 @@
-import fireStore from "./Firebase";
+import { fireStore } from "./Firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 const collectionCategory = collection(fireStore, "categories");

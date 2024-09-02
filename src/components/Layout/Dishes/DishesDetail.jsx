@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { getCategory } from "../../../service/Category";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -7,22 +7,49 @@ import {
 	faCartShopping,
 	faCashRegister,
 } from "@fortawesome/free-solid-svg-icons";
+import { toast } from "react-toastify";
 
 function DishesDetail({ item }) {
 	const [categories, setCategories] = useState([]);
 
 	useEffect(() => {
+		window.scrollTo(0, 0);
 		const fetchCategory = async () => {
 			const categoryList = await getCategory();
 			setCategories(categoryList);
 		};
 		fetchCategory();
 	}, []);
+	let isLogIn = false;
 	console.log(categories);
-	// const navigate = useNavigate();
+	const navigate = useNavigate();
+	const handleAddToCart = (e) => {
+		e.preventDefault();
+		if (isLogIn) {
+			console.log("Add " + item.title + "to cart");
+		} else {
+			toast.info("You need to Log In first !", {
+				position: "top-right",
+				autoClose: 5000,
+				hideProgressBar: false,
+				closeOnClick: true,
+				pauseOnHover: true,
+				draggable: true,
+				progress: undefined,
+				theme: "light",
+			});
+			setTimeout(() => {
+				navigate("/LoginPage");
+			}, 1500);
+		}
+	};
+	const handleBuy = (e) => {
+		e.preventDefault();
+		console.log("Buy");
+	};
+
 	const imgPath =
 		"https://plus.unsplash.com/premium_photo-1679503585289-c02467981894?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NjV8fHJlc3RhdXJhbnQlMjBmb29kfGVufDB8fDB8fHww";
-	console.log(categories, item.category);
 	return (
 		<div className="max-w-screen-2xl mx-auto px-12">
 			<div className="flex py-20 justify-between">
@@ -122,10 +149,16 @@ function DishesDetail({ item }) {
 				</aside> */}
 				{/* Option add to cart or payment */}
 				<div className="flex flex-col gap-4">
-					<button className="text-white font-medium text-xl bg-blue-500 px-6 py-4 rounded-[10px] hover:opacity-70">
+					<button
+						onClick={handleAddToCart}
+						className="text-white font-medium text-xl bg-blue-500 px-6 py-4 rounded-[10px] hover:opacity-70"
+					>
 						Add to cart <FontAwesomeIcon icon={faCartShopping} />
 					</button>
-					<button className="text-white font-medium text-xl bg-[#FC8019] px-6 py-4 rounded-[10px] hover:opacity-70">
+					<button
+						onClick={handleBuy}
+						className="text-white font-medium text-xl bg-[#FC8019] px-6 py-4 rounded-[10px] hover:opacity-70"
+					>
 						Buy now <FontAwesomeIcon icon={faCashRegister} />
 					</button>
 				</div>

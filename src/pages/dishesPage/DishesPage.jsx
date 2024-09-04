@@ -5,7 +5,6 @@ import { useLocation } from "react-router-dom";
 export default function DishesPage() {
 	const location = useLocation();
 	const item = location.state;
-	console.log(item);
 	return (
 		<main className="w-screen overflow-hidden h-screen">
 			<DishedInfo item={item} />

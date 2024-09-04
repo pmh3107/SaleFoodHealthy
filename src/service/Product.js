@@ -6,6 +6,7 @@ import {
 	updateDoc,
 	deleteDoc,
 	doc,
+	getDoc,
 } from "firebase/firestore";
 
 const productsCollection = collection(fireStore, "products");
@@ -50,4 +51,26 @@ const deleteProduct = async (id) => {
 	}
 };
 
-export { getProducts, addProduct, updateProduct, deleteProduct };
+const getProductById = async (id) => {
+	try {
+		const productDoc = doc(fireStore, "products", id);
+		const productSnapshot = await getDoc(productDoc);
+		if (productSnapshot.exists()) {
+			return { id: productSnapshot.id, ...productSnapshot.data() };
+		} else {
+			console.error("No such product!");
+			return null;
+		}
+	} catch (error) {
+		console.error("Error fetching product:", error);
+		return null;
+	}
+};
+
+export {
+	getProducts,
+	addProduct,
+	updateProduct,
+	deleteProduct,
+	getProductById,
+};

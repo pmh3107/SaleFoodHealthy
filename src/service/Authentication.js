@@ -4,6 +4,8 @@ import {
 	onAuthStateChanged,
 	signOut,
 	createUserWithEmailAndPassword,
+	updatePassword,
+	deleteUser,
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 
@@ -70,4 +72,41 @@ const checkAuthState = (callback) => {
 	});
 };
 
-export { loginUser, createNewUser, logoutUser, checkAuthState };
+const updateUserPassword = async (newPassword) => {
+	try {
+		const user = auth.currentUser;
+		if (user) {
+			await updatePassword(user, newPassword);
+			console.log("Password updated successfully");
+		} else {
+			throw new Error("No user is currently signed in");
+		}
+	} catch (error) {
+		console.error("Error updating password:", error.message);
+		throw error;
+	}
+};
+
+const deleteUserAccount = async () => {
+	try {
+		const user = auth.currentUser;
+		if (user) {
+			await deleteUser(user);
+			console.log("User account deleted successfully");
+		} else {
+			throw new Error("No user is currently signed in");
+		}
+	} catch (error) {
+		console.error("Error deleting user account:", error.message);
+		throw error;
+	}
+};
+
+export {
+	loginUser,
+	createNewUser,
+	logoutUser,
+	checkAuthState,
+	updateUserPassword,
+	deleteUserAccount,
+};

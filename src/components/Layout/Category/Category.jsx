@@ -13,7 +13,6 @@ function Category() {
 		};
 		fetchData();
 	}, []);
-	console.log(categoryList);
 	return (
 		<div className="max-w-screen-2xl mx-auto px-12 ">
 			<h2 className="text-[#202020] text-2xl font-medium mb-7">

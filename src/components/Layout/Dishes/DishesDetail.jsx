@@ -1,17 +1,20 @@
 import PropTypes from "prop-types";
-import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { getCategory } from "../../../service/Category";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
 	faCartShopping,
 	faCashRegister,
 } from "@fortawesome/free-solid-svg-icons";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { addItemToCart } from "../../../service/User"; // Import the addItemToCart function
 import { toast } from "react-toastify";
 
 function DishesDetail({ item }) {
 	const [categories, setCategories] = useState([]);
-
+	const [user, setUser] = useState(null); // State to store user info
+	const navigate = useNavigate();
 	useEffect(() => {
 		window.scrollTo(0, 0);
 		const fetchCategory = async () => {
@@ -19,30 +22,33 @@ function DishesDetail({ item }) {
 			setCategories(categoryList);
 		};
 		fetchCategory();
+		const auth = getAuth();
+		onAuthStateChanged(auth, (user) => {
+			if (user) {
+				setUser(user);
+			} else {
+				setUser(null);
+			}
+		});
 	}, []);
-	let isLogIn = false;
-	console.log(categories);
-	const navigate = useNavigate();
-	const handleAddToCart = (e) => {
+
+	const handleAddToCart = async (e) => {
 		e.preventDefault();
-		if (isLogIn) {
-			console.log("Add " + item.title + "to cart");
+		if (user) {
+			const success = await addItemToCart(user.uid, item.id);
+			if (success) {
+				toast.success("Item added to cart");
+			} else {
+				toast.error("Failed to add item to cart");
+			}
 		} else {
-			toast.info("You need to Log In first !", {
-				position: "top-right",
-				autoClose: 5000,
-				hideProgressBar: false,
-				closeOnClick: true,
-				pauseOnHover: true,
-				draggable: true,
-				progress: undefined,
-				theme: "light",
-			});
+			toast.info("Please login to add to cart");
 			setTimeout(() => {
 				navigate("/LoginPage");
 			}, 1500);
 		}
 	};
+
 	const handleBuy = (e) => {
 		e.preventDefault();
 		console.log("Buy");
@@ -86,71 +92,10 @@ function DishesDetail({ item }) {
 						/>
 					</figure>
 				</section>
-				{/* Detail */}
-				{/* <aside className="flex flex-col gap-11 w-[365px] h-[539px] text-[#202020]">
-					<header className="flex items-center justify-between text-2xl font-medium">
-						<h2>Cart</h2>
-						<p className="text-base">2 items</p>
-					</header>
-
-					<div className="flex flex-col gap-8">
-						<div className="flex flex-col gap-4">
-							<h2 className="text-base font-medium">
-								from <span className="text-[#FC8019]">Lunch Box</span>
-							</h2>
-							<div className="flex justify-between items-center">
-								<div>
-									<p className="text-base font-medium">Brunch for 2 - Veg</p>
-									<span className="text-[#808080]">₹599</span>
-								</div>
-								<div className="flex items-center gap-3 text-xl font-normal">
-									<button>-</button>
-									<span>1</span>
-									<button>+</button>
-								</div>
-							</div>
-						</div>
-						<div className="flex flex-col gap-4">
-							<h2 className="text-base font-medium">
-								from <span className="text-[#FC8019]">Fatso</span>
-							</h2>
-							<div className="flex justify-between items-center">
-								<div>
-									<p className="text-base font-medium">Brunch for 2 - Veg</p>
-									<span className="text-[#808080]">₹599</span>
-								</div>
-								<div className="flex items-center gap-3 text-xl font-normal">
-									<button>-</button>
-									<span>1</span>
-									<button>+</button>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<div>
-						<div className="flex justify-between items-center text-2xl font-medium">
-							<h3>Subtotal</h3>
-							<span>₹799</span>
-						</div>
-						<p className="text-[#808080] text-sm font-normal">
-							Extra charges may apply
-						</p>
-					</div>
-					<button
-						onClick={(e) => {
-							e.preventDefault();
-							navigate("/PaymentPage");
-						}}
-						className="text-white font-medium text-2xl bg-[#FC8019] px-6 py-4 rounded-[10px] hover:opacity-70"
-					>
-						Checkout
-					</button>
-				</aside> */}
 				{/* Option add to cart or payment */}
 				<div className="flex flex-col gap-4">
 					<button
-						onClick={handleAddToCart}
+						onClick={handleAddToCart} // Add onClick handler
 						className="text-white font-medium text-xl bg-blue-500 px-6 py-4 rounded-[10px] hover:opacity-70"
 					>
 						Add to cart <FontAwesomeIcon icon={faCartShopping} />
@@ -166,8 +111,10 @@ function DishesDetail({ item }) {
 		</div>
 	);
 }
+
 DishesDetail.propTypes = {
 	item: PropTypes.shape({
+		id: PropTypes.string.isRequired,
 		title: PropTypes.string.isRequired,
 		description: PropTypes.string,
 		price: PropTypes.number.isRequired,
@@ -177,4 +124,5 @@ DishesDetail.propTypes = {
 		time: PropTypes.number,
 	}),
 };
+
 export default DishesDetail;

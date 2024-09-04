@@ -10,7 +10,7 @@ export default function Footer() {
 					{/* Logo */}
 					<div className="flex items-center gap-2">
 						<FontAwesomeIcon className="text-2xl" icon={faPlateWheat} />
-						<h1 className="font-bold text-2xl">FastFOOD</h1>
+						<h1 className="font-bold text-2xl">FreshFOOD</h1>
 					</div>
 
 					{/* Navigation Links */}

@@ -31,7 +31,6 @@ export default function UserPage() {
 			}
 		});
 	}, []);
-
 	const handleEditInfo = () => {
 		form.setFieldsValue(userData);
 		setIsEditing(true);
@@ -158,7 +157,9 @@ export default function UserPage() {
 								<h2 className="text-3xl font-semibold">Manage orders</h2>
 								<div className="flex flex-col gap-4 mt-5">
 									<p className="text-lg font-medium ">Orders completed: 1</p>
-									<p className="text-lg font-medium ">Dishes in cart: 1</p>
+									<p className="text-lg font-medium ">
+										Dishes in cart: {userData?.carts?.length}
+									</p>
 								</div>
 							</div>
 						</div>

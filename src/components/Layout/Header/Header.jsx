@@ -2,32 +2,24 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
 	faMagnifyingGlass,
 	faPlateWheat,
+	faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { checkAuthState, logoutUser } from "../../../service/Authentication";
+import { getProductById } from "../../../service/Product";
+import { deleteProductFromUserCart } from "../../../service/User";
+import { toast } from "react-toastify";
 
 export default function Header() {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [user, setUser] = useState(null);
 	const [infoUser, setInfoUser] = useState(false);
+	const [showCart, setShowCart] = useState(false);
 	const userRef = useRef(null);
+	const cartRef = useRef(null);
 	const navigate = useNavigate();
-	useEffect(() => {
-		checkAuthState((loggedIn, user) => {
-			setIsLoggedIn(loggedIn);
-			setUser(user);
-		});
-		const handleClickOutside = (event) => {
-			if (userRef.current && !userRef.current.contains(event.target)) {
-				setInfoUser(false);
-			}
-		};
-		document.addEventListener("mousedown", handleClickOutside);
-		return () => {
-			document.removeEventListener("mousedown", handleClickOutside);
-		};
-	}, []);
+	const [cartItems, setCartItems] = useState([]);
 
 	const handleLogout = async () => {
 		await logoutUser();
@@ -37,6 +29,57 @@ export default function Header() {
 	const handleShowUser = (e) => {
 		e.preventDefault();
 		setInfoUser((prev) => !prev);
+	};
+
+	const handleShowCart = (e) => {
+		e.preventDefault();
+		setShowCart((prev) => !prev);
+	};
+
+	useEffect(() => {
+		checkAuthState((loggedIn, user) => {
+			setIsLoggedIn(loggedIn);
+			setUser(user);
+		});
+
+		const handleClickOutside = (event) => {
+			if (userRef.current && !userRef.current.contains(event.target)) {
+				setInfoUser(false);
+			}
+			if (cartRef.current && !cartRef.current.contains(event.target)) {
+				setShowCart(false);
+			}
+		};
+
+		const fetchCartItems = async () => {
+			if (user?.carts?.length > 0) {
+				const cartItems = await Promise.all(
+					user.carts.map(async (itemId) => {
+						const product = await getProductById(itemId);
+						return product;
+					})
+				);
+				setCartItems(cartItems);
+			}
+		};
+
+		fetchCartItems();
+
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, [user]);
+
+	const handleDeleteItem = async (itemId) => {
+		try {
+			await deleteProductFromUserCart(user.uid, itemId);
+			const updatedCartItems = cartItems.filter((item) => item.id !== itemId);
+			setCartItems(updatedCartItems);
+		} catch (error) {
+			console.error("Error removing item from cart:", error);
+			toast.error("Failed to remove item from cart.");
+		}
 	};
 
 	return (
@@ -55,7 +98,7 @@ export default function Header() {
 						className="text-2xl text-[#FC8019]"
 						icon={faPlateWheat}
 					/>
-					<h1 className="font-bold text-2xl">FastFOOD</h1>
+					<h1 className="font-bold text-2xl">FreshFOOD</h1>
 				</a>
 
 				{/* Navbar */}
@@ -78,13 +121,56 @@ export default function Header() {
 						</button>
 					</form>
 
-					<a
-						href="/cart"
-						className="w-12 h-12 flex justify-center items-center text-[#202020] hover:opacity-75"
-						aria-label="View Cart"
-					>
-						<img src="/images/icon/Cart.svg" alt="Cart" />
-					</a>
+					<div className="relative w-12 h-12 ">
+						<button
+							onClick={handleShowCart}
+							className="flex justify-center items-center text-[#202020] hover:opacity-75"
+						>
+							<figure className="w-9 h-9">
+								<img
+									src="/images/icon/Cart.svg"
+									alt="Cart"
+									className="w-full h-full object-cover"
+								/>
+								{user?.carts?.length > 0 && (
+									<span className="absolute -top-1 right-1 w-5 h-5 bg-[#FC8019] text-white text-xs rounded-full flex justify-center items-center">
+										{user.carts.length}
+									</span>
+								)}
+							</figure>
+						</button>
+						{showCart && (
+							<div
+								ref={cartRef}
+								className="absolute top-16 right-0 z-20 min-w-[300px]"
+							>
+								<section className="p-5 bg-slate-50 rounded-[10px]">
+									{cartItems.map((item, index) => (
+										<div key={index} className="flex gap-4 mb-4">
+											<img
+												src={item.image}
+												alt={item.title}
+												className="w-16 h-16 object-cover rounded"
+											/>
+											<div>
+												<p className="font-bold">{item.title}</p>
+												<p className="text-sm text-gray-600">${item.price}</p>
+											</div>
+											<button
+												onClick={() => handleDeleteItem(item.id)}
+												className="text-red-500 hover:text-red-700"
+											>
+												<FontAwesomeIcon icon={faTrash} />
+											</button>
+										</div>
+									))}
+									<Link to="/PaymentPage" className="btnPrimary mt-4">
+										Go to Payment
+									</Link>
+								</section>
+							</div>
+						)}
+					</div>
 					<div className="flex gap-2">
 						{isLoggedIn ? (
 							<>
@@ -101,9 +187,9 @@ export default function Header() {
 									<div
 										className={`${
 											infoUser ? "absolute" : "hidden"
-										} top-15 right-0 z-20`}
+										} top-15 right-0 z-20 transition delay-400 duration-300 ease-in-out`}
 									>
-										<section className="transition delay-150 duration-300 ease-in-out p-5 bg-slate-50 rounded-[10px]">
+										<section className="p-5 bg-slate-50 rounded-[10px]">
 											<div className="flex flex-col gap-5">
 												<p className="text-base font-normal">{user.email}</p>
 												<figure className="flex justify-center items-center">

@@ -1,14 +1,35 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { loginUser } from "../../../service/Authentication";
 import { getUserData } from "../../../service/User";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useMutation, useQueryClient } from "react-query";
 
-export default function Login() {
+export default function LogIn() {
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
+	const { setLoading } = useOutletContext();
+
+	const loginMutation = useMutation(loginUser, {
+		onSuccess: async (user) => {
+			const userData = await getUserData(user.uid);
+			queryClient.setQueryData(["userData", user.uid], userData);
+			navigate("/", { state: { userData } });
+		},
+		onError: (error) => {
+			console.error("Login failed:", error);
+			toast.error("Login failed. Please check your credentials.");
+		},
+		onMutate: () => {
+			setLoading(true);
+		},
+		onSettled: () => {
+			setLoading(false);
+		},
+	});
 
 	const handleSubmit = async (event) => {
 		event.preventDefault();
@@ -17,28 +38,13 @@ export default function Login() {
 			toast.error("Please fill in all fields");
 			return;
 		}
-
-		// Simple email validation
 		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 		if (!emailRegex.test(email)) {
 			toast.error("Please enter a valid email");
 			return;
 		}
 
-		try {
-			const user = await loginUser(email, password);
-			console.log("User logged in:", user.uid);
-			const userData = await getUserData(user.uid);
-			console.log(userData);
-			if (user) {
-				navigate("/", { state: { userData } });
-			} else {
-				toast.error("Login failed. Please check your credentials.");
-			}
-		} catch (error) {
-			console.log(error);
-			toast.error("An error occurred. Please try again later.");
-		}
+		loginMutation.mutate({ email, password });
 	};
 
 	return (

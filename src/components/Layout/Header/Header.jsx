@@ -7,19 +7,38 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { checkAuthState, logoutUser } from "../../../service/Authentication";
-import { getProductById } from "../../../service/Product";
 import { deleteProductFromUserCart } from "../../../service/User";
 import { toast } from "react-toastify";
+import { useQuery } from "react-query";
+import { getUserData, subscribeToUserCart } from "../../../service/User";
+import { useQueries } from "react-query";
+import { getProductById } from "../../../service/Product";
 
 export default function Header() {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
 	const [user, setUser] = useState(null);
 	const [infoUser, setInfoUser] = useState(false);
 	const [showCart, setShowCart] = useState(false);
+	const [cartItems, setCartItems] = useState([]);
 	const userRef = useRef(null);
 	const cartRef = useRef(null);
 	const navigate = useNavigate();
-	const [cartItems, setCartItems] = useState([]);
+
+	const { data: userData } = useQuery(
+		["userData", user?.uid],
+		() => getUserData(user?.uid),
+		{
+			enabled: !!user?.uid,
+		}
+	);
+
+	useEffect(() => {
+		if (userData) {
+			setTimeout(() => {
+				console.log(userData);
+			}, 5000);
+		}
+	}, [userData]);
 
 	const handleLogout = async () => {
 		await logoutUser();
@@ -51,31 +70,37 @@ export default function Header() {
 			}
 		};
 
-		const fetchCartItems = async () => {
-			if (user?.carts?.length > 0) {
-				const cartItems = await Promise.all(
-					user.carts.map(async (itemId) => {
-						const product = await getProductById(itemId);
-						return product;
-					})
-				);
-				setCartItems(cartItems);
-			}
-		};
-
-		fetchCartItems();
-
 		document.addEventListener("mousedown", handleClickOutside);
 		return () => {
 			document.removeEventListener("mousedown", handleClickOutside);
 		};
 	}, [user]);
 
+	useEffect(() => {
+		if (user) {
+			const unsubscribe = subscribeToUserCart(user.uid, setCartItems);
+			return () => {
+				if (typeof unsubscribe === "function") {
+					unsubscribe();
+				}
+			};
+		}
+	}, [user]);
+
+	const productQueries = useQueries(
+		cartItems.map((productId) => ({
+			queryKey: ["product", productId],
+			queryFn: () => getProductById(productId),
+			enabled: !!productId,
+		}))
+	);
+
+	const products = productQueries.map((query) => query.data).filter(Boolean);
+
 	const handleDeleteItem = async (itemId) => {
 		try {
 			await deleteProductFromUserCart(user.uid, itemId);
-			const updatedCartItems = cartItems.filter((item) => item.id !== itemId);
-			setCartItems(updatedCartItems);
+			console.log("Item deleted from cart:", itemId);
 		} catch (error) {
 			console.error("Error removing item from cart:", error);
 			toast.error("Failed to remove item from cart.");
@@ -132,9 +157,9 @@ export default function Header() {
 									alt="Cart"
 									className="w-full h-full object-cover"
 								/>
-								{user?.carts?.length > 0 && (
+								{cartItems.length > 0 && (
 									<span className="absolute -top-1 right-1 w-5 h-5 bg-[#FC8019] text-white text-xs rounded-full flex justify-center items-center">
-										{user.carts.length}
+										{cartItems.length}
 									</span>
 								)}
 							</figure>
@@ -145,19 +170,21 @@ export default function Header() {
 								className="absolute top-16 right-0 z-20 min-w-[300px]"
 							>
 								<section className="p-5 bg-slate-50 rounded-[10px]">
-									{cartItems.map((item, index) => (
+									{products.map((product, index) => (
 										<div key={index} className="flex gap-4 mb-4">
 											<img
-												src={item.image}
-												alt={item.title}
+												src={product.image}
+												alt={product.title}
 												className="w-16 h-16 object-cover rounded"
 											/>
 											<div>
-												<p className="font-bold">{item.title}</p>
-												<p className="text-sm text-gray-600">${item.price}</p>
+												<p className="font-bold">{product.title}</p>
+												<p className="text-sm text-gray-600">
+													${product.price}
+												</p>
 											</div>
 											<button
-												onClick={() => handleDeleteItem(item.id)}
+												onClick={() => handleDeleteItem(product.id)}
 												className="text-red-500 hover:text-red-700"
 											>
 												<FontAwesomeIcon icon={faTrash} />

@@ -20,12 +20,12 @@ function PickDateTime({ onDetailsChange }) {
 
 	const handleDateChange = (event) => {
 		setDate(event.target.value);
-		onDetailsChange({ dateTime: `${event.target.value} ${time}` });
+		onDetailsChange({ date: event.target.value, time });
 	};
 
 	const handleTimeChange = (event) => {
 		setTime(event.target.value);
-		onDetailsChange({ dateTime: `${date} ${event.target.value}` });
+		onDetailsChange({ date, time: event.target.value });
 	};
 
 	return (
@@ -98,6 +98,12 @@ function SelectionAddressDateTime({ userData, onDetailsChange }) {
 		onDetailsChange({ numberOfPeople: event.target.value });
 	};
 
+	const handleDateTimeChange = ({ date, time }) => {
+		// Remove unused state update
+		// setDateTime({ date, time });
+		onDetailsChange({ dateTime: `${date} ${time}` });
+	};
+
 	return (
 		<div className="w-2/3">
 			<div className="flex gap-8 py-10">
@@ -167,7 +173,7 @@ function SelectionAddressDateTime({ userData, onDetailsChange }) {
 
 				{orderType === "dine-in" ? (
 					<div className="mt-7">
-						<PickDateTime onDetailsChange={onDetailsChange} />
+						<PickDateTime onDetailsChange={handleDateTimeChange} />
 						<div className="mt-10 flex gap-3 border-b-[1px] border-[#808080] items-center">
 							<label
 								htmlFor="number-of-people"
@@ -186,7 +192,7 @@ function SelectionAddressDateTime({ userData, onDetailsChange }) {
 						</div>
 					</div>
 				) : (
-					<PickDateTime onDetailsChange={onDetailsChange} />
+					<PickDateTime onDetailsChange={handleDateTimeChange} />
 				)}
 			</div>
 		</div>

@@ -1,64 +1,89 @@
 import { useEffect, useState } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { Button, Modal, Form, Input, message } from "antd";
-import { updateUser } from "../../service/User"; // Import updateUser function
+import {
+	updateUser,
+	getUserData,
+	getUserOrdersByIds,
+} from "../../service/User";
+import { useQuery, useMutation, useQueryClient } from "react-query";
 
 export default function UserPage() {
-	const [userData, setUserData] = useState(null);
+	const [userId, setUserId] = useState(null);
 	const [isModalVisible, setIsModalVisible] = useState(false);
-	const [isEditing, setIsEditing] = useState(false);
 	const [form] = Form.useForm();
+	const queryClient = useQueryClient();
 
 	useEffect(() => {
-		const fetchUserData = async (uid) => {
-			const db = getFirestore();
-			const userDoc = doc(db, "users", uid);
-			const userSnapshot = await getDoc(userDoc);
-			if (userSnapshot.exists()) {
-				setUserData({ uid, ...userSnapshot.data() });
-			} else {
-				console.log("No such document!");
-			}
-		};
-
 		const auth = getAuth();
-		onAuthStateChanged(auth, (user) => {
+		const unsubscribe = onAuthStateChanged(auth, (user) => {
 			if (user) {
-				fetchUserData(user.uid);
+				setUserId(user.uid);
 			} else {
 				console.log("User is not signed in");
 			}
 		});
+		return () => unsubscribe();
 	}, []);
+
+	const { data: userData } = useQuery(
+		["userData", userId],
+		() => getUserData(userId),
+		{
+			enabled: !!userId,
+		}
+	);
+
+	const { data: ordersData } = useQuery(
+		["userOrders", userData?.orders],
+		() => getUserOrdersByIds(userData?.orders),
+		{
+			enabled: !!userData?.orders?.length,
+		}
+	);
+
+	const mutation = useMutation(updateUser, {
+		onSuccess: () => {
+			queryClient.invalidateQueries(["userData", userId]);
+			message.success("User data updated successfully!");
+			setIsModalVisible(false);
+		},
+		onError: (error) => {
+			console.error("Error updating user data:", error);
+			message.error("Failed to update user data.");
+		},
+	});
+
 	const handleEditInfo = () => {
 		form.setFieldsValue(userData);
-		setIsEditing(true);
-		setIsModalVisible(true);
-	};
-
-	const handleAddAddress = () => {
-		form.resetFields();
-		setIsEditing(false);
 		setIsModalVisible(true);
 	};
 
 	const handleOk = async () => {
 		try {
 			const values = await form.validateFields();
-			if (!userData || !userData.uid) {
+			if (!userId) {
 				message.error("User ID is missing.");
 				return;
 			}
-			const success = await updateUser(userData.uid, values);
-
-			if (success) {
-				message.success("User data updated successfully!");
-				setUserData({ ...userData, ...values });
-			} else {
-				message.error("Failed to update user data.");
+			const { name, email, phone, address } = values;
+			if (
+				typeof name !== "string" ||
+				typeof address !== "string" ||
+				typeof phone !== "number"
+			) {
+				message.error(
+					"Name, email, and address must be strings, and phone must be a number."
+				);
+				return;
 			}
-			setIsModalVisible(false);
+			mutation.mutate({
+				uid: userId,
+				name,
+				email,
+				phone: Number(phone),
+				address,
+			});
 		} catch (error) {
 			console.error("Error saving user data:", error);
 			message.error("Error saving user data.");
@@ -130,7 +155,6 @@ export default function UserPage() {
 										<strong>Phone: </strong>
 										{userData.phone}
 									</p>
-
 									<p className="text-lg font-medium ">
 										<strong>Address: </strong> {userData.address}
 									</p>
@@ -143,81 +167,83 @@ export default function UserPage() {
 									>
 										Edit information
 									</Button>
-									<Button
-										type="primary"
-										onClick={handleAddAddress}
-										className="bg-[#FC8019] text-white px-4 py-2 rounded-md"
-									>
-										Change new address
-									</Button>
 								</div>
 							</div>
 							<span className="w-[1px] h-60 bg-slate-600"></span>
 							<div>
-								<h2 className="text-3xl font-semibold">Manage orders</h2>
+								<h2 className="text-3xl font-semibold text-center">
+									Manage orders ({ordersData?.length || 0})
+								</h2>
 								<div className="flex flex-col gap-4 mt-5">
-									<p className="text-lg font-medium ">Orders completed: 1</p>
-									<p className="text-lg font-medium ">
-										Dishes in cart: {userData?.carts?.length}
-									</p>
+									{ordersData?.map((order) => (
+										<div key={order.id} className="border p-4 rounded-md">
+											<p className="text-xl font-semibold mb-2 text-center">
+												{order.address === "In Restaurant"
+													? "In Restaurant"
+													: "Delivery"}{" "}
+												Order
+											</p>
+											<p className="text-lg font-medium">
+												<strong>Order ID: </strong> {order.id}
+											</p>
+											<p className="text-lg font-medium">
+												<strong>Date: </strong> {order.dateTime}
+											</p>
+											<p className="text-lg font-medium">
+												<strong>Total: </strong> ${order.total}
+											</p>
+											<p className="text-lg font-medium">
+												<strong>Status: </strong> {order.state}
+											</p>
+										</div>
+									))}
+								</div>
+							</div>
+							<span className="w-[1px] h-60 bg-slate-600"></span>
+							<div>
+								<h2 className="text-3xl font-semibold text-center">
+									Notifications
+								</h2>
+								<div className="flex flex-col gap-4 mt-5">
+									{/* <p className="text-lg font-medium">
+										<strong>Email: </strong> {userData.email}
+									</p> */}
 								</div>
 							</div>
 						</div>
 					</div>
-					<Modal
-						title={isEditing ? "Edit Information" : "Add Address"}
-						visible={isModalVisible}
-						onOk={handleOk}
-						onCancel={handleCancel}
-					>
-						<Form form={form} layout="vertical">
-							{isEditing ? (
-								<>
-									<Form.Item
-										name="name"
-										label="Name"
-										rules={[
-											{ required: true, message: "Please input your name!" },
-										]}
-									>
-										<Input />
-									</Form.Item>
-									<Form.Item
-										name="email"
-										label="Email"
-										rules={[
-											{ required: true, message: "Please input your email!" },
-										]}
-									>
-										<Input />
-									</Form.Item>
-									<Form.Item name="phone" label="Phone">
-										<Input />
-									</Form.Item>
-								</>
-							) : (
-								<Form.Item
-									name="address"
-									label="New Address"
-									rules={[
-										{
-											required: true,
-											message: "Please input the new address!",
-										},
-									]}
-								>
-									<Input />
-								</Form.Item>
-							)}
-						</Form>
-					</Modal>
 				</>
 			)}
-			{!userData && (
-				<div className="w-screen h-screen flex items-center justify-center">
-					<h1 className="text-3xl font-semibold">You are not logged in</h1>
-				</div>
-			)}
+			<Modal
+				title="Edit Information"
+				open={isModalVisible}
+				onOk={handleOk}
+				onCancel={handleCancel}
+			>
+				<Form form={form} layout="vertical">
+					<Form.Item
+						name="name"
+						label="Name"
+						rules={[{ required: true, message: "Please input your name!" }]}
+					>
+						<Input />
+					</Form.Item>
+					<Form.Item
+						name="phone"
+						label="Phone"
+						rules={[{ required: true, message: "Please input your phone!" }]}
+					>
+						<Input />
+					</Form.Item>
+					<Form.Item
+						name="address"
+						label="Address"
+						rules={[{ required: true, message: "Please input your address!" }]}
+					>
+						<Input />
+					</Form.Item>
+				</Form>
+			</Modal>
 		</main>
 	);
 }

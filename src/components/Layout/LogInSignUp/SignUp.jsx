@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useOutletContext } from "react-router-dom";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { createNewUser } from "../../../service/Authentication";
@@ -12,6 +12,7 @@ export default function SignUp() {
 	const [address, setAddress] = useState("");
 	const [phone, setPhone] = useState("");
 	const navigate = useNavigate();
+	const { setLoading } = useOutletContext();
 
 	const handleSubmit = async (event) => {
 		event.preventDefault();
@@ -36,6 +37,7 @@ export default function SignUp() {
 		const userData = { name, email, address, phone };
 
 		try {
+			setLoading(true);
 			const user = await createNewUser(email, password, userData);
 			if (user) {
 				toast("Successfully signed up. Please log in to continue.");
@@ -46,6 +48,8 @@ export default function SignUp() {
 		} catch (error) {
 			console.error(error);
 			toast.error("An error occurred. Please try again later.");
+		} finally {
+			setLoading(false);
 		}
 	};
 

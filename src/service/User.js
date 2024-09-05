@@ -7,6 +7,12 @@ import {
 	deleteDoc,
 	arrayUnion,
 	arrayRemove,
+	updateDoc,
+	onSnapshot,
+	query,
+	orderBy,
+	limit,
+	startAfter,
 } from "firebase/firestore";
 import { fireStore, auth } from "./Firebase";
 import {
@@ -39,7 +45,8 @@ const getUserData = async (uid) => {
 		const userDoc = doc(userCollection, uid);
 		const userSnapshot = await getDoc(userDoc);
 		if (userSnapshot.exists()) {
-			return { id: userSnapshot.id, ...userSnapshot.data() };
+			const userData = userSnapshot.data();
+			return { id: userSnapshot.id, ...userData };
 		} else {
 			console.error("No such user!");
 			return null;
@@ -50,15 +57,60 @@ const getUserData = async (uid) => {
 	}
 };
 
-const updateUser = async (uid, updatedData) => {
+const getUserOrders = async (uid, lastOrder = null) => {
 	try {
-		const userDoc = doc(userCollection, uid);
-		await setDoc(userDoc, updatedData, { merge: true });
-		return true;
+		const ordersCollection = collection(fireStore, "orders");
+		let ordersQuery = query(
+			ordersCollection,
+			orderBy("dateTime", "desc"),
+			limit(10)
+		);
+
+		if (lastOrder) {
+			ordersQuery = query(
+				ordersCollection,
+				orderBy("dateTime", "desc"),
+				startAfter(lastOrder),
+				limit(10)
+			);
+		}
+
+		const ordersSnapshot = await getDocs(ordersQuery);
+		const orders = ordersSnapshot.docs.map((doc) => ({
+			id: doc.id,
+			...doc.data(),
+		}));
+
+		return orders;
 	} catch (error) {
-		console.error("Error updating user data:", error);
-		return false;
+		console.error("Error fetching orders:", error);
+		return [];
 	}
+};
+
+const updateUser = async ({ uid, name, phone, address }) => {
+	if (
+		typeof name !== "string" ||
+		typeof address !== "string" ||
+		typeof phone !== "number"
+	) {
+		throw new TypeError(
+			"Name, address must be strings, and phone must be a number."
+		);
+	}
+
+	const userRef = doc(fireStore, "users", uid);
+	await updateDoc(
+		userRef,
+		{
+			name,
+
+			phone,
+			address,
+		},
+		{ merge: true }
+	);
+	return true;
 };
 
 const addItemToCart = async (uid, itemId) => {
@@ -149,9 +201,48 @@ const deleteProductFromUserCart = async (uid, itemId) => {
 	}
 };
 
+const getUserOrdersByIds = async (orderIds) => {
+	try {
+		const ordersCollection = collection(fireStore, "orders");
+		const ordersPromises = orderIds.map(async (orderId) => {
+			const orderDoc = await getDoc(doc(ordersCollection, orderId));
+			return { id: orderDoc.id, ...orderDoc.data() };
+		});
+		const orders = await Promise.all(ordersPromises);
+		return orders;
+	} catch (error) {
+		console.error("Error fetching orders by IDs:", error);
+		return [];
+	}
+};
+
+export function subscribeToUserCart(userId, callback) {
+	const userDocRef = doc(fireStore, "users", userId);
+
+	const unsubscribe = onSnapshot(
+		userDocRef,
+		(docSnapshot) => {
+			if (docSnapshot.exists()) {
+				const userData = docSnapshot.data();
+				const cartItems = userData.carts || [];
+				callback(cartItems);
+			} else {
+				callback([]);
+			}
+		},
+		(error) => {
+			console.error("Error subscribing to user cart:", error);
+			callback([]);
+		}
+	);
+
+	return unsubscribe;
+}
+
 export {
 	createUser,
 	getUserData,
+	getUserOrders,
 	updateUser,
 	addItemToCart,
 	getUsers,
@@ -160,4 +251,5 @@ export {
 	updateUserPassword,
 	deleteUserAccount,
 	deleteProductFromUserCart,
+	getUserOrdersByIds,
 };

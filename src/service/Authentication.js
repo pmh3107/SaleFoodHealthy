@@ -8,22 +8,19 @@ import {
 	deleteUser,
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
-const loginUser = async (email, password) => {
+const loginUser = async ({ email, password }) => {
 	try {
+		const auth = getAuth();
 		const userCredential = await signInWithEmailAndPassword(
 			auth,
 			email,
 			password
 		);
-		const user = userCredential.user;
-		const accessToken = user.stsTokenManager.accessToken;
-		localStorage.setItem("accessToken", accessToken);
-
-		console.log("User logged in:", user);
-		return user;
+		return userCredential.user;
 	} catch (error) {
-		console.error("Error logging in:", error.message);
+		console.error("Error logging in:", error);
 		throw error;
 	}
 };

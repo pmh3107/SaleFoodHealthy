@@ -8,10 +8,9 @@ import SelectionAddressDateTime from "../../components/Layout/Payment/SelectionA
 import { useNavigate } from "react-router-dom";
 import { addOrder } from "../../service/Order";
 import { toast } from "react-toastify";
+import { useQuery, useMutation, useQueryClient } from "react-query";
 
 export default function PaymentPage() {
-	const [userData, setUserData] = useState(null);
-	const [cartItems, setCartItems] = useState([]);
 	const [userId, setUserId] = useState(null);
 	const [orderDetails, setOrderDetails] = useState({
 		address: "",
@@ -22,12 +21,12 @@ export default function PaymentPage() {
 	});
 
 	const navigate = useNavigate();
+	const queryClient = useQueryClient();
 
 	useEffect(() => {
 		const unsubscribe = onAuthStateChanged(auth, (user) => {
 			if (user) {
 				setUserId(user.uid);
-				setUserData(user);
 			} else {
 				console.log("User is not logged in");
 			}
@@ -35,25 +34,41 @@ export default function PaymentPage() {
 		return () => unsubscribe();
 	}, []);
 
-	useEffect(() => {
-		const fetchUserData = async () => {
-			if (userId) {
-				const data = await getUserData(userId);
-				if (data) {
-					setUserData(data);
+	const { data: userData } = useQuery(
+		["userData", userId],
+		() => getUserData(userId),
+		{
+			enabled: !!userId,
+		}
+	);
 
-					const cartItemIds = data.carts;
-					const cartItemsPromises = cartItemIds.map(async (itemId) => {
-						const item = await getProductById(itemId);
-						return { id: item.id, ...item };
-					});
-					const items = await Promise.all(cartItemsPromises);
-					setCartItems(items);
-				}
-			}
-		};
-		fetchUserData();
-	}, [userId]);
+	const { data: cartItems } = useQuery(
+		["cartItems", userData],
+		async () => {
+			const cartItemIds = userData.carts;
+			const cartItemsPromises = cartItemIds.map(async (itemId) => {
+				const item = await getProductById(itemId);
+				return { id: item.id, ...item };
+			});
+			return Promise.all(cartItemsPromises);
+		},
+		{
+			enabled: !!userData,
+		}
+	);
+
+	const mutation = useMutation(addOrder, {
+		onSuccess: () => {
+			queryClient.invalidateQueries("cartItems");
+			queryClient.invalidateQueries(["userData", userId]);
+			toast.success("Order placed successfully!");
+			navigate("/order-summary");
+		},
+		onError: (error) => {
+			console.error("Error placing order: ", error);
+			toast.error("Failed to place order.");
+		},
+	});
 
 	const handleOrder = async () => {
 		try {
@@ -73,16 +88,19 @@ export default function PaymentPage() {
 					quantity: item.quantity || 1,
 				})),
 				total:
-					cartItems.reduce(
-						(total, item) => total + item.price * (item.quantity || 1),
-						0
-					) + 15,
+					orderDetails.orderType === "takeaway"
+						? cartItems.reduce(
+								(total, item) => total + item.price * (item.quantity || 1),
+								0
+						  ) + 15
+						: cartItems.reduce(
+								(total, item) => total + item.price * (item.quantity || 1),
+								0
+						  ),
 				state: "Pending",
 			};
 			console.log(orderData);
-			await addOrder(orderData);
-			toast.success("Order placed successfully!");
-			navigate("/order-summary");
+			mutation.mutate(orderData);
 		} catch (error) {
 			console.error("Error placing order: ", error);
 			toast.error("Failed to place order.");
@@ -104,12 +122,14 @@ export default function PaymentPage() {
 				/>
 				{/* card details */}
 				<CardDetail
-					cartItems={cartItems}
+					cartItems={cartItems || []}
 					userData={userData || {}}
 					onPaymentInfoChange={(paymentInfo) =>
 						setOrderDetails((prev) => ({ ...prev, paymentInfo }))
 					}
-					onCartItemsChange={setCartItems}
+					onCartItemsChange={(items) =>
+						queryClient.setQueryData(["cartItems", userData], items)
+					}
 					handleOrder={handleOrder}
 					orderDetails={orderDetails}
 				/>

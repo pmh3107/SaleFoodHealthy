@@ -1,7 +1,7 @@
 function Loading() {
 	return (
 		<div className="relative w-screen h-screen bg-white flex items-center justify-center">
-			<div className="">
+			<div>
 				<img
 					src="/images/LoadingCook.gif"
 					alt="loading"
@@ -11,4 +11,5 @@ function Loading() {
 		</div>
 	);
 }
+
 export default Loading;

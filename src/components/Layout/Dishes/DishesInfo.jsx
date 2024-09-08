@@ -46,20 +46,6 @@ function DishedInfo({ item }) {
 						</ul>
 					</div>
 				</section>
-				{/* Discount */}
-				<aside className="max-w-[400px] flex flex-col gap-5 p-8 rounded-[20px] border-2 border-[#FC8019] border-dashed text-white">
-					<h2 className="text-[#FC8019] text-2xl font-medium">Offers</h2>
-					<div className="flex items-center gap-2.5">
-						<img src="/images/discount.svg" alt="Discount icon" />
-						<p className="text-base font-medium">
-							50% off up to $10 | Use code TRYNEW
-						</p>
-					</div>
-					<div className="flex items-center gap-2.5">
-						<img src="/images/discount.svg" alt="Discount icon" />
-						<p className="text-base font-medium">20% off | Use code PARTY</p>
-					</div>
-				</aside>
 			</div>
 		</div>
 	);

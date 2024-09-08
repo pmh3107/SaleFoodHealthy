@@ -1,6 +1,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { getDatabase } from "firebase/database";
 
 const firebaseConfig = {
 	apiKey: import.meta.env.VITE_REACT_APP_API_KEY,
@@ -15,6 +16,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const fireStore = getFirestore(app);
 const auth = getAuth(app);
+const storage = getDatabase(app);
 
 // Check if Firebase is initialized correctly
 if (!app) {
@@ -23,4 +25,4 @@ if (!app) {
 	console.log("Firebase initialized successfully.");
 }
 
-export { fireStore, auth };
+export { fireStore, auth, storage };

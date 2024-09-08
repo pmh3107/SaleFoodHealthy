@@ -49,30 +49,44 @@ function DishesDetail({ item }) {
 		}
 	};
 
-	const handleBuy = (e) => {
+	const handleBuy = async (e) => {
 		e.preventDefault();
-		console.log("Buy");
+		if (user) {
+			const success = await addItemToCart(user.uid, item.id);
+			if (success) {
+				navigate("/PaymentPage");
+			} else {
+				toast.error("Failed to buy, please try again");
+			}
+		} else {
+			toast.info("Please login to add to cart");
+			setTimeout(() => {
+				navigate("/LoginPage");
+			}, 1500);
+		}
 	};
 
 	const imgPath =
 		"https://plus.unsplash.com/premium_photo-1679503585289-c02467981894?w=800&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NjV8fHJlc3RhdXJhbnQlMjBmb29kfGVufDB8fDB8fHww";
 	return (
 		<div className="max-w-screen-2xl mx-auto px-12">
-			<div className="flex py-20 justify-between">
+			<div className="flex pt-12 justify-between">
 				{/* List */}
 				<nav className="w-52 flex flex-col gap-4 items-end">
 					{categories.map((category, index) => (
 						<span
 							key={index}
 							className={`text-base font-medium ${
-								item.category === category ? "text-[#FC8019]" : "text-[#404040]"
+								item.category.toLowerCase() === category.name.toLowerCase()
+									? "text-[#FC8019]"
+									: "text-[#404040]"
 							}`}
 						>
 							{category.name}
 						</span>
 					))}
 				</nav>
-				<div className="w-[1px] h-[500px] bg-[#808080]"></div>
+				<div className="w-[1px] h-[300px] bg-[#808080]"></div>
 				{/* Dishes */}
 				<section className="flex gap-10">
 					<div className="flex flex-col gap-4">

@@ -6,6 +6,7 @@ import {
 	updateProduct,
 	deleteProduct,
 } from "../../service/Product";
+import { toast } from "react-toastify";
 
 const AdminProduct = () => {
 	const [products, setProducts] = useState([]);
@@ -72,8 +73,10 @@ const AdminProduct = () => {
 				]);
 			}
 			setIsModalVisible(false);
+			toast.success("Product saved successfully");
 		} catch (error) {
 			console.error("Error saving product:", error);
+			toast.error("Error saving product");
 		}
 	};
 

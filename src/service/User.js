@@ -20,7 +20,6 @@ import {
 	deleteUser as deleteAuthUser,
 	updatePassword,
 } from "firebase/auth";
-
 const userCollection = collection(fireStore, "users");
 
 const createUser = async (email, password, userData) => {
@@ -88,11 +87,12 @@ const getUserOrders = async (uid, lastOrder = null) => {
 	}
 };
 
-const updateUser = async ({ uid, name, phone, address }) => {
+const updateUser = async ({ uid, name, phone, address, voucher }) => {
 	if (
 		typeof name !== "string" ||
 		typeof address !== "string" ||
-		typeof phone !== "number"
+		isNaN(Number(phone)) ||
+		typeof voucher !== "boolean"
 	) {
 		throw new TypeError(
 			"Name, address must be strings, and phone must be a number."
@@ -104,9 +104,9 @@ const updateUser = async ({ uid, name, phone, address }) => {
 		userRef,
 		{
 			name,
-
-			phone,
+			phone: Number(phone), // Convert phone to number
 			address,
+			voucher: !!voucher,
 		},
 		{ merge: true }
 	);
@@ -216,7 +216,19 @@ const getUserOrdersByIds = async (orderIds) => {
 	}
 };
 
-export function subscribeToUserCart(userId, callback) {
+const updateUserOrders = async (userId, orderId) => {
+	try {
+		const userRef = doc(fireStore, "users", userId);
+		await updateDoc(userRef, {
+			orders: arrayUnion(orderId),
+		});
+		console.log(`Order ${orderId} added to user ${userId}`);
+	} catch (error) {
+		console.error("Error updating user orders:", error);
+		throw error;
+	}
+};
+function subscribeToUserCart(userId, callback) {
 	const userDocRef = doc(fireStore, "users", userId);
 
 	const unsubscribe = onSnapshot(
@@ -252,4 +264,6 @@ export {
 	deleteUserAccount,
 	deleteProductFromUserCart,
 	getUserOrdersByIds,
+	updateUserOrders,
+	subscribeToUserCart,
 };

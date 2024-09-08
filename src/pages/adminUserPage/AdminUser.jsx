@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
-import { Table, Button, Modal, Form, Input } from "antd";
+import { Table, Button, Modal, Form, Input, Switch } from "antd";
 import { getUsers, addUser, updateUser, deleteUser } from "../../service/User";
 import { toast } from "react-toastify";
+
 const AdminUser = () => {
 	const [users, setUsers] = useState([]);
 	const [isModalVisible, setIsModalVisible] = useState(false);
@@ -38,7 +39,7 @@ const AdminUser = () => {
 		try {
 			const values = await form.validateFields();
 			if (isEditing) {
-				await updateUser(currentUser.id, values);
+				await updateUser({ ...currentUser, ...values });
 				setUsers(
 					users.map((item) =>
 						item.id === currentUser.id ? { ...item, ...values } : item
@@ -59,6 +60,26 @@ const AdminUser = () => {
 
 	const handleCancel = () => {
 		setIsModalVisible(false);
+	};
+
+	const handleVoucherToggle = async (record) => {
+		try {
+			const updatedUser = {
+				...record,
+				uid: record.id,
+				voucher: !record.voucher,
+			};
+			await updateUser(updatedUser);
+			setUsers(
+				users.map((item) => (item.id === record.id ? updatedUser : item))
+			);
+			toast.success(
+				`Voucher ${record.voucher ? "removed" : "added"} successfully`
+			);
+		} catch (error) {
+			console.error("Error updating voucher:", error);
+			toast.error("Error updating voucher");
+		}
 	};
 
 	const columns = [
@@ -83,9 +104,15 @@ const AdminUser = () => {
 			key: "address",
 		},
 		{
-			title: "Orders Been Made",
-			dataIndex: "order",
-			key: "order",
+			title: "Voucher",
+			dataIndex: "voucher",
+			key: "voucher",
+			render: (text, record) => (
+				<Switch
+					checked={record.voucher}
+					onChange={() => handleVoucherToggle(record)}
+				/>
+			),
 		},
 		{
 			title: "Actions",
@@ -102,6 +129,7 @@ const AdminUser = () => {
 			),
 		},
 	];
+
 	return (
 		<main className="w-5/6 h-screen">
 			<article className="px-10 py-16 flex flex-col gap-4">
@@ -129,16 +157,21 @@ const AdminUser = () => {
 					<Form.Item
 						name="phone"
 						label="Phone Number"
-						rules={[{ required: true, message: "Please input the email!" }]}
+						rules={[
+							{ required: true, message: "Please input the phone number!" },
+						]}
 					>
 						<Input />
 					</Form.Item>
 					<Form.Item
 						name="address"
 						label="Address"
-						rules={[{ required: true, message: "Please input the email!" }]}
+						rules={[{ required: true, message: "Please input the address!" }]}
 					>
 						<Input />
+					</Form.Item>
+					<Form.Item name="voucher" label="Voucher" valuePropName="checked">
+						<Switch />
 					</Form.Item>
 				</Form>
 			</Modal>

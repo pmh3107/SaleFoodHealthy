@@ -1,11 +1,21 @@
 import { useState, useEffect } from "react";
-import { Table, Button, Modal, Form, Input } from "antd";
+import { Table, Button, Modal, Form, Input, Select } from "antd";
 import {
 	getOrders,
-	addOrder,
 	updateOrder,
 	deleteOrder,
+	updateOrderStatus,
+	removeOrderFromUserOrders, // Add this import statement
 } from "../../service/Order";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+	faBarsProgress,
+	faUtensils,
+	faTruckFast,
+} from "@fortawesome/free-solid-svg-icons";
+import { toast } from "react-toastify";
+
+const { Option } = Select;
 
 const AdminOrder = () => {
 	const [orders, setOrders] = useState([]);
@@ -13,7 +23,7 @@ const AdminOrder = () => {
 	const [isEditing, setIsEditing] = useState(false);
 	const [currentOrder, setCurrentOrder] = useState(null);
 	const [form] = Form.useForm();
-
+	console.log(orders);
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
@@ -26,13 +36,6 @@ const AdminOrder = () => {
 		fetchData();
 	}, []);
 
-	const handleAdd = () => {
-		form.resetFields();
-		setCurrentOrder(null);
-		setIsEditing(false);
-		setIsModalVisible(true);
-	};
-
 	const handleEdit = (record) => {
 		form.setFieldsValue(record);
 		setCurrentOrder(record);
@@ -41,8 +44,28 @@ const AdminOrder = () => {
 	};
 
 	const handleDelete = async (id) => {
-		await deleteOrder(id);
-		setOrders(orders.filter((item) => item.id !== id));
+		try {
+			// Ensure currentOrder is set before accessing userId
+			if (!currentOrder) {
+				console.error("No current order selected for deletion.");
+				return;
+			}
+
+			// Xóa đơn hàng từ collection orders
+			await deleteOrder(id);
+
+			// Lấy userId từ đơn hàng hiện tại
+			const userId = currentOrder.userId; // Điều chỉnh dòng này dựa trên cấu trúc dữ liệu của bạn
+
+			// Xóa ID đơn hàng khỏi collection user/orders
+			await removeOrderFromUserOrders(userId, id); // Hàm này cần được định nghĩa để xóa ID đơn hàng
+
+			// Cập nhật trạng thái local
+			setOrders((prevOrders) => prevOrders.filter((item) => item.id !== id));
+			setCurrentOrder(null); // Reset currentOrder after deletion
+		} catch (error) {
+			console.error("Error deleting order:", error);
+		}
 	};
 
 	const handleOk = async () => {
@@ -55,9 +78,6 @@ const AdminOrder = () => {
 						item.id === currentOrder.id ? { ...item, ...values } : item
 					)
 				);
-			} else {
-				const newOrder = await addOrder(values);
-				setOrders([...orders, { ...values, id: newOrder.id }]);
 			}
 			setIsModalVisible(false);
 		} catch (error) {
@@ -69,6 +89,16 @@ const AdminOrder = () => {
 		setIsModalVisible(false);
 	};
 
+	const handleUpdateStatus = async (id, status) => {
+		try {
+			await updateOrderStatus(id, { state: status, timestamp: Date.now() });
+			toast.success(`Order ${id} status updated to ${status}`);
+		} catch (error) {
+			console.error("Error updating order status:", error);
+			toast.error("Failed to update order status.");
+		}
+	};
+
 	const columns = [
 		{
 			title: "Order ID",
@@ -76,9 +106,25 @@ const AdminOrder = () => {
 			key: "id",
 		},
 		{
-			title: "User ID",
-			dataIndex: "userId",
-			key: "userId",
+			title: "User Name",
+			dataIndex: "name",
+			key: "name",
+		},
+		{
+			title: `Dishes`,
+			dataIndex: "dishes",
+			key: "dishes",
+			render: (dishes) => (
+				<ul>
+					<strong>Dishes </strong>
+					{orders.length + 1}
+					{dishes.map((dish, index) => (
+						<li key={index}>
+							{index + 1}. {dish.name}
+						</li>
+					))}
+				</ul>
+			),
 		},
 		{
 			title: "Total",
@@ -89,6 +135,19 @@ const AdminOrder = () => {
 			title: "State",
 			dataIndex: "state",
 			key: "state",
+			render: (text, record) => (
+				<Select
+					defaultValue={text}
+					style={{ width: 120 }}
+					onChange={(value) => handleUpdateStatus(record.id, value)} // Update status on change
+				>
+					<Option value="Pending">Pending</Option>
+					<Option value="In Process">In Process</Option>
+					<Option value="Completed">Completed</Option>
+					<Option value="Delivered">Delivered</Option>
+					<Option value="Cancelled">Cancelled</Option>
+				</Select>
+			),
 		},
 		{
 			title: "Actions",
@@ -116,25 +175,27 @@ const AdminOrder = () => {
 	return (
 		<main className="w-5/6 h-screen">
 			<article className="px-10 py-16 flex flex-col gap-4">
-				<h1 className="text-3xl font-bold ">Order Management</h1>
-				<p className="text-xl">
+				<h1 className="text-3xl font-bold text-orange-500 text-center">
+					{" "}
+					<FontAwesomeIcon icon={faBarsProgress} className="mr-2" />
+					Order Management
+				</h1>
+				<p className="text-xl text-center font-normal">
 					Number of Orders: <strong>{orders.length}</strong>
 				</p>
 			</article>
-			<Button
-				type="primary"
-				onClick={handleAdd}
-				style={{ marginBottom: 16 }}
-				className="mx-10"
-			>
-				Add Order
-			</Button>
 			<section className="px-10">
-				<h2 className="text-2xl font-semibold">Delivery Orders</h2>
+				<h2 className="text-2xl font-semibold my-3">
+					<FontAwesomeIcon icon={faTruckFast} className="mr-2" />
+					Delivery Orders
+				</h2>
 				<Table columns={columns} dataSource={deliveryOrders} rowKey="id" />
 			</section>
 			<section className="px-10 mt-10">
-				<h2 className="text-2xl font-semibold">Restaurant Orders</h2>
+				<h2 className="text-2xl font-semibold my-3">
+					<FontAwesomeIcon icon={faUtensils} className="mr-2" />
+					Restaurant Orders
+				</h2>
 				<Table columns={columns} dataSource={restaurantOrders} rowKey="id" />
 			</section>
 			<Modal

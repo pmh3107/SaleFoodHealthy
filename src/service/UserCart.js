@@ -1,10 +1,11 @@
-import { fireStore, collection } from "./Firebase";
+import { fireStore } from "./Firebase";
 import {
 	doc,
 	setDoc,
 	getDoc,
 	arrayUnion,
 	arrayRemove,
+	collection,
 } from "firebase/firestore";
 
 const userCollection = collection(fireStore, "users");

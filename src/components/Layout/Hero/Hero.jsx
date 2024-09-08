@@ -65,11 +65,13 @@ function Hero() {
 					className="flex gap-5"
 					onSubmit={(e) => {
 						e.preventDefault();
-						navigate("/SearchPage");
+						const keyword = e.target.elements.search.value;
+						navigate(`/searchPage?keyword=${keyword}`);
 					}}
 				>
 					<input
 						type="text"
+						name="search"
 						placeholder="Enter your delivery location"
 						className="rounded-[10px] border-[1px] border-[#808080] bg-white py-4 px-6 w-[622px]"
 					/>

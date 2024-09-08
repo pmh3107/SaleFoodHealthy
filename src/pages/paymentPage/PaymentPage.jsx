@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "../../service/Firebase";
-import { getUserData } from "../../service/User";
+import { getUserData, updateUserOrders } from "../../service/User";
+import { removeItemFromCart } from "../../service/UserCart";
 import { getProductById } from "../../service/Product";
 import CardDetail from "../../components/Layout/Payment/CardDetail";
 import SelectionAddressDateTime from "../../components/Layout/Payment/SelectionAddressDateTime";
 import { useNavigate } from "react-router-dom";
-import { addOrder } from "../../service/Order";
+import { addOrder, createOrderStatus } from "../../service/Order";
 import { toast } from "react-toastify";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 
@@ -23,16 +24,18 @@ export default function PaymentPage() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 
-	useEffect(() => {
+	useLayoutEffect(() => {
 		const unsubscribe = onAuthStateChanged(auth, (user) => {
 			if (user) {
 				setUserId(user.uid);
 			} else {
 				console.log("User is not logged in");
+				toast.error("Please login to continue");
+				navigate("/LoginPage");
 			}
 		});
 		return () => unsubscribe();
-	}, []);
+	}, [navigate]);
 
 	const { data: userData } = useQuery(
 		["userData", userId],
@@ -58,11 +61,17 @@ export default function PaymentPage() {
 	);
 
 	const mutation = useMutation(addOrder, {
-		onSuccess: () => {
+		onSuccess: async (data) => {
+			await updateUserOrders(userId, data.id);
 			queryClient.invalidateQueries("cartItems");
 			queryClient.invalidateQueries(["userData", userId]);
 			toast.success("Order placed successfully!");
-			navigate("/order-summary");
+			navigate("/OrderSummaryPage", {
+				state: {
+					orderDetails,
+					cartItems,
+				},
+			});
 		},
 		onError: (error) => {
 			console.error("Error placing order: ", error);
@@ -97,10 +106,17 @@ export default function PaymentPage() {
 								(total, item) => total + item.price * (item.quantity || 1),
 								0
 						  ),
-				state: "Pending",
 			};
-			console.log(orderData);
-			mutation.mutate(orderData);
+			const { id } = await mutation.mutateAsync(orderData);
+			await createOrderStatus(id, {
+				state: "Pending",
+				userId,
+				timestamp: Date.now(),
+			});
+
+			await Promise.all(
+				cartItems.map((item) => removeItemFromCart(userId, item.id))
+			);
 		} catch (error) {
 			console.error("Error placing order: ", error);
 			toast.error("Failed to place order.");
@@ -113,14 +129,12 @@ export default function PaymentPage() {
 				Secure Checkout
 			</h1>
 			<div className="flex justify-between py-12">
-				{/* selection */}
 				<SelectionAddressDateTime
 					userData={userData || {}}
 					onDetailsChange={(details) =>
 						setOrderDetails((prev) => ({ ...prev, ...details }))
 					}
 				/>
-				{/* card details */}
 				<CardDetail
 					cartItems={cartItems || []}
 					userData={userData || {}}

@@ -5,7 +5,7 @@ import {
 	faTrash,
 } from "@fortawesome/free-solid-svg-icons";
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useLayoutEffect } from "react";
 import { checkAuthState, logoutUser } from "../../../service/Authentication";
 import { deleteProductFromUserCart } from "../../../service/User";
 import { toast } from "react-toastify";
@@ -13,6 +13,7 @@ import { useQuery } from "react-query";
 import { getUserData, subscribeToUserCart } from "../../../service/User";
 import { useQueries } from "react-query";
 import { getProductById } from "../../../service/Product";
+import { subscribeToOrderStatus } from "../../../service/Order";
 
 export default function Header() {
 	const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -20,6 +21,7 @@ export default function Header() {
 	const [infoUser, setInfoUser] = useState(false);
 	const [showCart, setShowCart] = useState(false);
 	const [cartItems, setCartItems] = useState([]);
+	const [orderID, setOrderID] = useState(null);
 	const userRef = useRef(null);
 	const cartRef = useRef(null);
 	const navigate = useNavigate();
@@ -35,10 +37,41 @@ export default function Header() {
 	useEffect(() => {
 		if (userData) {
 			setTimeout(() => {
-				console.log(userData);
+				console.log(userData.orders);
+				if (userData?.orders?.length > 0) {
+					setOrderID(userData.orders);
+				}
 			}, 5000);
 		}
 	}, [userData]);
+
+	useEffect(() => {
+		const handleOrderStatus = async (orderID) => {
+			if (!orderID) {
+				return;
+			}
+
+			await orderID.forEach((order) => {
+				if (order) {
+					const unsubscribe = subscribeToOrderStatus(order, (status) => {
+						if (status) {
+							console.log("status", status.state);
+							toast.info(`Order status updated to ${status.state}`);
+						} else {
+							console.warn("Received invalid status update:", status);
+						}
+					});
+					return () => {
+						if (typeof unsubscribe === "function") {
+							unsubscribe();
+						}
+					};
+				}
+			});
+		};
+
+		handleOrderStatus(orderID);
+	}, [orderID]);
 
 	const handleLogout = async () => {
 		await logoutUser();
@@ -55,12 +88,14 @@ export default function Header() {
 		setShowCart((prev) => !prev);
 	};
 
-	useEffect(() => {
+	useLayoutEffect(() => {
 		checkAuthState((loggedIn, user) => {
 			setIsLoggedIn(loggedIn);
 			setUser(user);
 		});
+	}, []);
 
+	useEffect(() => {
 		const handleClickOutside = (event) => {
 			if (userRef.current && !userRef.current.contains(event.target)) {
 				setInfoUser(false);
@@ -114,8 +149,8 @@ export default function Header() {
 				aria-label="Main Navigation"
 			>
 				{/* Logo */}
-				<a
-					href="/"
+				<Link
+					to="/"
 					className="flex items-center gap-2"
 					aria-label="FastFOOD Home"
 				>
@@ -124,7 +159,7 @@ export default function Header() {
 						icon={faPlateWheat}
 					/>
 					<h1 className="font-bold text-2xl">FreshFOOD</h1>
-				</a>
+				</Link>
 
 				{/* Navbar */}
 				<div className="flex items-center gap-6">
@@ -170,28 +205,38 @@ export default function Header() {
 								className="absolute top-16 right-0 z-20 min-w-[300px]"
 							>
 								<section className="p-5 bg-slate-50 rounded-[10px]">
-									{products.map((product, index) => (
-										<div key={index} className="flex gap-4 mb-4">
-											<img
-												src={product.image}
-												alt={product.title}
-												className="w-16 h-16 object-cover rounded"
-											/>
-											<div>
-												<p className="font-bold">{product.title}</p>
-												<p className="text-sm text-gray-600">
-													${product.price}
-												</p>
+									{cartItems.length === 0 ? (
+										<p className="text-center text-gray-500">
+											Your cart is empty
+										</p>
+									) : (
+										products.map((product, index) => (
+											<div key={index} className="flex gap-4 mb-4">
+												<img
+													src={product.image}
+													alt={product.title}
+													className="w-16 h-16 object-cover rounded"
+												/>
+												<div>
+													<p className="font-bold">{product.title}</p>
+													<p className="text-sm text-gray-600">
+														${product.price}
+													</p>
+												</div>
+												<button
+													onClick={() => handleDeleteItem(product.id)}
+													className="text-red-500 hover:text-red-700"
+												>
+													<FontAwesomeIcon icon={faTrash} />
+												</button>
 											</div>
-											<button
-												onClick={() => handleDeleteItem(product.id)}
-												className="text-red-500 hover:text-red-700"
-											>
-												<FontAwesomeIcon icon={faTrash} />
-											</button>
-										</div>
-									))}
-									<Link to="/PaymentPage" className="btnPrimary mt-4">
+										))
+									)}
+
+									<Link
+										to={cartItems.length === 0 ? "#" : "/PaymentPage"}
+										className="btnPrimary mt-4"
+									>
 										Go to Payment
 									</Link>
 								</section>

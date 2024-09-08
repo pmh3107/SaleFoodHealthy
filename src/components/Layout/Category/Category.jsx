@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { getCategory } from "../../../service/Category";
+
 function Category() {
 	const [categoryList, setCategoryList] = useState([]);
+	const navigate = useNavigate();
+
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
@@ -13,6 +17,7 @@ function Category() {
 		};
 		fetchData();
 	}, []);
+
 	return (
 		<div className="max-w-screen-2xl mx-auto px-12 ">
 			<h2 className="text-[#202020] text-2xl font-medium mb-7">
@@ -23,7 +28,7 @@ function Category() {
 				{categoryList.map((item) => (
 					<li key={item.id} className="p-6 ">
 						<button
-							href="!#"
+							onClick={() => navigate(`/searchPage?category=${item.name}`)}
 							className="flex flex-col items-center gap-6 justify-center"
 						>
 							<img

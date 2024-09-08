@@ -1,4 +1,8 @@
+import { useNavigate } from "react-router-dom";
+
 function SearchByRestaurant() {
+	const navigate = useNavigate();
+
 	return (
 		<div className="bg-[#FC8019] my-28">
 			<div className="max-w-screen-2xl mx-auto py-20 flex gap-8 items-center justify-center">
@@ -6,15 +10,23 @@ function SearchByRestaurant() {
 					Search by Restaurant <img src="/images/search.svg" alt="" />
 				</h2>
 
-				<form className="flex gap-5">
+				<form
+					className="flex gap-5"
+					onSubmit={(e) => {
+						e.preventDefault();
+						const keyword = e.target.elements.search.value;
+						navigate(`/searchPage?keyword=${keyword}`);
+					}}
+				>
 					<input
 						type="text"
-						name=""
-						id=""
+						name="search"
 						placeholder="Enter item or restaurant you are looking for"
 						className="text-sm placeholder-[rgba(255, 255, 255, 0.50)]  text-white bg-transparent border-[1px] border-white w-[622px] px-6 py-4 rounded-[10px] focus:outline-none"
 					/>
-					<button className="btnPrimary">Search Now</button>
+					<button type="submit" className="btnPrimary">
+						Search Now
+					</button>
 				</form>
 			</div>
 		</div>

@@ -10,6 +10,8 @@ import {
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 
+const adminEmails = ["admin@freshfood.com", "admin2@freshfood.com"]; // List of admin emails
+
 const loginUser = async ({ email, password }) => {
 	try {
 		const auth = getAuth();
@@ -18,10 +20,31 @@ const loginUser = async ({ email, password }) => {
 			email,
 			password
 		);
-		return userCredential.user;
+		const user = userCredential.user;
+		return user;
 	} catch (error) {
 		console.error("Error logging in:", error);
 		throw error;
+	}
+};
+const loginAdminUser = async ({ email, password }) => {
+	try {
+		const auth = getAuth();
+		const userCredential = await signInWithEmailAndPassword(
+			auth,
+			email,
+			password
+		);
+		const user = userCredential.user;
+		const isAdmin = adminEmails.includes(email);
+		if (isAdmin) {
+			localStorage.setItem("isAdmin", "true");
+		} else {
+			localStorage.removeItem("isAdmin");
+		}
+		return { ...user, isAdmin };
+	} catch (error) {
+		console.error("Error logging in:", error);
 	}
 };
 
@@ -53,6 +76,30 @@ const logoutUser = async () => {
 	}
 };
 
+const logoutAdminUser = async () => {
+	try {
+		await signOut(auth);
+		localStorage.removeItem("accessToken");
+		localStorage.removeItem("isAdmin");
+		console.log("User logged out successfully");
+	} catch (error) {
+		console.error("Error logging out:", error.message);
+	}
+};
+const checkAdminAuthState = async (callback) => {
+	onAuthStateChanged(auth, async (user) => {
+		if (user) {
+			if (user.email === "admin@freshfood.com") {
+				callback(true);
+			} else {
+				console.error("No such user document!");
+				callback(false);
+			}
+		} else {
+			callback(false);
+		}
+	});
+};
 const checkAuthState = (callback) => {
 	onAuthStateChanged(auth, async (user) => {
 		if (user) {
@@ -106,4 +153,7 @@ export {
 	checkAuthState,
 	updateUserPassword,
 	deleteUserAccount,
+	loginAdminUser,
+	logoutAdminUser,
+	checkAdminAuthState,
 };

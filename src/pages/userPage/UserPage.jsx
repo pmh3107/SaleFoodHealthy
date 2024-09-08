@@ -7,10 +7,14 @@ import {
 	getUserOrdersByIds,
 } from "../../service/User";
 import { useQuery, useMutation, useQueryClient } from "react-query";
+import { subscribeToOrderStatus } from "../../service/Order";
+import { faEnvelope, faBoxOpen } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 export default function UserPage() {
 	const [userId, setUserId] = useState(null);
 	const [isModalVisible, setIsModalVisible] = useState(false);
+	const [notifications, setNotifications] = useState([]);
 	const [form] = Form.useForm();
 	const queryClient = useQueryClient();
 
@@ -41,7 +45,48 @@ export default function UserPage() {
 			enabled: !!userData?.orders?.length,
 		}
 	);
-
+	useEffect(() => {
+		const handleOrderStatus = async (orderID) => {
+			if (orderID) {
+				await orderID.forEach((order) => {
+					if (order) {
+						const unsubscribe = subscribeToOrderStatus(order, (status) => {
+							if (status) {
+								setNotifications((prevNotifications) => {
+									const newNotification = `🔖 Your Order ${order} status updated to ${status.state}`;
+									const orderNotificationIndex = prevNotifications.findIndex(
+										(notification) =>
+											notification.includes(`Your Order ${order}`)
+									);
+									let newNotifications;
+									if (orderNotificationIndex !== -1) {
+										newNotifications = [...prevNotifications];
+										newNotifications[orderNotificationIndex] = newNotification;
+									} else {
+										newNotifications = [...prevNotifications, newNotification];
+									}
+									if (newNotifications.length > 4) {
+										return newNotifications.slice(-4);
+									}
+									return newNotifications;
+								});
+							} else {
+								console.warn("Received invalid status update:", status);
+							}
+						});
+						return () => {
+							if (typeof unsubscribe === "function") {
+								unsubscribe();
+							}
+						};
+					}
+				});
+			} else {
+				console.log("No orders found");
+			}
+		};
+		handleOrderStatus(userData?.orders);
+	}, [userData?.orders]);
 	const mutation = useMutation(updateUser, {
 		onSuccess: () => {
 			queryClient.invalidateQueries(["userData", userId]);
@@ -140,7 +185,7 @@ export default function UserPage() {
 					</div>
 					<div className="max-w-screen-2xl mx-auto px-12 py-6 ">
 						<div className="flex gap-20">
-							<div>
+							<div className="w-1/3">
 								<h2 className="text-3xl font-semibold">Manage information</h2>
 								<div className="flex flex-col gap-4 mt-5">
 									<p className="text-lg font-medium ">
@@ -169,12 +214,23 @@ export default function UserPage() {
 									</Button>
 								</div>
 							</div>
-							<span className="w-[1px] h-60 bg-slate-600"></span>
-							<div>
-								<h2 className="text-3xl font-semibold text-center">
-									Manage orders ({ordersData?.length || 0})
-								</h2>
-								<div className="flex flex-col gap-4 mt-5">
+							<span className="w-[1px] h-100 bg-slate-600"></span>
+							<div className="w-1/3">
+								<div className="relative text-center">
+									<FontAwesomeIcon
+										icon={faBoxOpen}
+										className="text-3xl font-semibold mr-2"
+									/>
+									{ordersData?.length > 0 && (
+										<span className="absolute -top-2 left-8 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">
+											{ordersData.length}
+										</span>
+									)}
+									<h2 className="text-3xl font-semibold inline-block">
+										Manage orders
+									</h2>
+								</div>
+								<div className="flex flex-col gap-4 mt-5 h-[500px] overflow-y-auto">
 									{ordersData?.map((order) => (
 										<div key={order.id} className="border p-4 rounded-md">
 											<p className="text-xl font-semibold mb-2 text-center">
@@ -190,24 +246,37 @@ export default function UserPage() {
 												<strong>Date: </strong> {order.dateTime}
 											</p>
 											<p className="text-lg font-medium">
-												<strong>Total: </strong> ${order.total}
+												<strong>Dishes: </strong>
 											</p>
+											<ul className="list-disc list-inside">
+												{order.dishes.map((dish, index) => (
+													<li key={index} className="text-lg font-medium">
+														{dish.name}
+													</li>
+												))}
+											</ul>
 											<p className="text-lg font-medium">
-												<strong>Status: </strong> {order.state}
+												<strong>Total: </strong> ${order.total}
 											</p>
 										</div>
 									))}
 								</div>
 							</div>
-							<span className="w-[1px] h-60 bg-slate-600"></span>
-							<div>
+							<span className="w-[1px] h-100 bg-slate-600"></span>
+							<div className="w-1/3">
 								<h2 className="text-3xl font-semibold text-center">
+									<FontAwesomeIcon icon={faEnvelope} className="mr-2 " />
 									Notifications
 								</h2>
-								<div className="flex flex-col gap-4 mt-5">
-									{/* <p className="text-lg font-medium">
-										<strong>Email: </strong> {userData.email}
-									</p> */}
+								<div className="flex flex-col gap-4 mt-5 p-1 bg-white shadow-md rounded-md">
+									{notifications.map((notification, index) => (
+										<p
+											key={index}
+											className="text-lg font-semibold text-gray-700 bg-gray-100 p-2 rounded-md"
+										>
+											{notification}
+										</p>
+									))}
 								</div>
 							</div>
 						</div>

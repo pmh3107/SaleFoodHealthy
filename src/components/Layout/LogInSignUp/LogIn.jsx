@@ -12,12 +12,16 @@ export default function LogIn() {
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const { setLoading } = useOutletContext();
-
 	const loginMutation = useMutation(loginUser, {
 		onSuccess: async (user) => {
 			const userData = await getUserData(user.uid);
 			queryClient.setQueryData(["userData", user.uid], userData);
-			navigate("/", { state: { userData } });
+			if (user.email === "admin@freshfood.com") {
+				navigate("/loginAdminPage");
+				toast.info("Login Admin !");
+			} else {
+				navigate("/", { state: { userData } });
+			}
 		},
 		onError: (error) => {
 			console.error("Login failed:", error);

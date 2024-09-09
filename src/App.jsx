@@ -50,9 +50,9 @@ export default function App() {
 								<Route path="contact" element={<ContactPage />} />
 								<Route path="*" element={<ErrorPage />} />
 							</Route>
-							<Route path="loginPage" element={<LoginPage />}>
-								<Route index element={<Login />} />
-								<Route path="signUp" element={<SignUp />} />
+							<Route element={<LoginPage />}>
+								<Route path="loginPage" element={<Login />} />
+								<Route path="SignUpPage" element={<SignUp />} />
 							</Route>
 
 							<Route path="loginAdminPage" element={<LoginAdminPage />} />

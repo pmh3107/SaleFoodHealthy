@@ -55,7 +55,7 @@ export default function SignUp() {
 
 	return (
 		<div className="px-12">
-			<form onSubmit={handleSubmit} className="flex flex-col gap-6">
+			<form onSubmit={handleSubmit} className="flex flex-col gap-4">
 				<div className="flex flex-col">
 					<input
 						type="text"

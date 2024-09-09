@@ -4,7 +4,6 @@ import PropTypes from "prop-types";
 import { Button } from "antd";
 
 function AllFoods({ products }) {
-	console.log(products);
 	const [currentPage, setCurrentPage] = useState(1);
 	const productsPerPage = 4;
 	const totalPages = Math.ceil(products.length / productsPerPage);
@@ -22,9 +21,9 @@ function AllFoods({ products }) {
 	};
 
 	return (
-		<div className="max-w-screen-2xl mx-auto px-12 mt-20">
+		<div className="max-w-screen-2xl mx-auto px-4 my-5 sm:px-6 lg:px-8 mt-20">
 			<h2 className="text-[#202020] text-3xl font-medium mb-7">All dishes</h2>
-			<div className="grid grid-cols-4 gap-4">
+			<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
 				{currentProducts.map((item, index) => (
 					<FoodCard key={index} item={item} />
 				))}

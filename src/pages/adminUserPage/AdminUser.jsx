@@ -5,16 +5,19 @@ import { toast } from "react-toastify";
 
 const AdminUser = () => {
 	const [users, setUsers] = useState([]);
+	const [allUsers, setAllUsers] = useState([]);
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [isEditing, setIsEditing] = useState(false);
 	const [currentUser, setCurrentUser] = useState(null);
 	const [form] = Form.useForm();
+	const [searchName, setSearchName] = useState("");
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				const data = await getUsers();
 				setUsers(data);
+				setAllUsers(data); // Lưu trữ tất cả người dùng vào state allUsers
 			} catch (error) {
 				console.error("Error fetching data:", error);
 			}
@@ -82,6 +85,23 @@ const AdminUser = () => {
 		}
 	};
 
+	const handleSearch = () => {
+		const filteredUsers = allUsers.filter((user) =>
+			user.name.toLowerCase().includes(searchName.toLowerCase())
+		);
+		setUsers(filteredUsers);
+	};
+
+	const handleSort = () => {
+		const sortedUsers = [...users].sort((a, b) => a.name.localeCompare(b.name));
+		setUsers(sortedUsers);
+	};
+
+	const handleReset = () => {
+		setUsers(allUsers);
+		setSearchName("");
+	};
+
 	const columns = [
 		{
 			title: "Name",
@@ -137,6 +157,16 @@ const AdminUser = () => {
 				<p className="text-xl">
 					Number of Users: <strong>{users.length}</strong>
 				</p>
+				<div className="flex gap-4">
+					<Input
+						placeholder="Enter name to search"
+						value={searchName}
+						onChange={(e) => setSearchName(e.target.value)}
+					/>
+					<Button onClick={handleSearch}>Search</Button>
+					<Button onClick={handleSort}>Sort A-Z</Button>
+					<Button onClick={handleReset}>Reset</Button> {/* Thêm nút Reset */}
+				</div>
 			</article>
 
 			<Table columns={columns} dataSource={users} rowKey="id" />

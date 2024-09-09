@@ -1,6 +1,6 @@
 import { NavLink, Outlet, Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import Loading from "../../components/common/Loading";
 
@@ -12,13 +12,20 @@ export default function LoginPage() {
 				<Loading />
 			) : (
 				<>
-					<header className="max-w-screen-2xl mx-auto px-12 py-10">
+					<header className="max-w-screen-2xl mx-auto px-12 py-10 flex justify-between">
 						<Link
 							to={"/"}
 							className="text-[#FC8019] font-medium text-lg hover:text-[#F54B4B]"
 						>
 							<FontAwesomeIcon icon={faArrowLeft} className="pr-2" />
 							Back to HomePage
+						</Link>
+						<Link
+							to="/loginAdminPage"
+							className="text-[#FC8019] font-medium text-lg hover:text-[#F54B4B]"
+						>
+							Login Admin
+							<FontAwesomeIcon icon={faArrowRight} className="pl-2" />
 						</Link>
 					</header>
 					<main className="max-w-screen-2xl mx-auto px-12 h-screen flex">

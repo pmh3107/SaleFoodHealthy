@@ -1,15 +1,19 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { getProducts } from "../../service/Product"; // Import the getProducts function
+import { getProducts } from "../../service/Product";
+import { getCategory } from "../../service/Category"; // Import the getCategory function
 
 export default function SearchPage() {
 	const location = useLocation();
+	const navigate = useNavigate();
 	const searchParams = new URLSearchParams(location.search);
 	const keyword = searchParams.get("keyword");
 	const category = searchParams.get("category");
 
 	const [filteredData, setFilteredData] = useState([]);
 	const [data, setData] = useState([]);
+	const [categories, setCategories] = useState([]);
+	const [searchInput, setSearchInput] = useState(keyword || "");
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -17,6 +21,15 @@ export default function SearchPage() {
 			setData(products);
 		};
 		fetchData();
+	}, []);
+
+	useEffect(() => {
+		const fetchCategories = async () => {
+			const categoryList = await getCategory();
+			setCategories(categoryList);
+		};
+		fetchCategories();
+		window.scrollTo(0, 0);
 	}, []);
 
 	useEffect(() => {
@@ -37,10 +50,48 @@ export default function SearchPage() {
 		}
 	}, [keyword, category, data]);
 
-	const imgPath = "/default-image.jpg"; // Add a default image path
+	const handleSearch = (e) => {
+		e.preventDefault();
+		navigate(`/searchPage?keyword=${searchInput}`);
+	};
+
+	const imgPath = "/default-image.jpg";
 
 	return (
-		<main className="max-w-screen-2xl mx-auto px-12">
+		<main className="max-w-screen-2xl mx-auto px-12 min-h-screen">
+			{/* Search Input */}
+			<section className="my-8 mx-40 lg:mx-60">
+				<form onSubmit={handleSearch} className="flex gap-5">
+					<input
+						type="text"
+						name="search"
+						placeholder="Enter item or restaurant you are looking for"
+						value={searchInput}
+						onChange={(e) => setSearchInput(e.target.value)}
+						className="text-sm placeholder-[rgba(0, 0, 0, 0.50)] text-black bg-transparent border-[1px] border-black w-full px-6 rounded-[10px] focus:outline-none"
+					/>
+					<button
+						type="submit"
+						className="bg-black text-white px-6 py-3 rounded-[10px] w-[200px] text-sm font-medium"
+					>
+						Search Now
+					</button>
+				</form>
+			</section>
+			{/* Categories */}
+			<section className="my-8 mx-auto">
+				<div className="flex gap-1 flex-wrap justify-center">
+					{categories.map((cat) => (
+						<button
+							key={cat.id}
+							onClick={() => navigate(`/searchPage?category=${cat.name}`)}
+							className=" text-black decoration-underline underline-offset-4 px-6 py-2  text-sm font-normal"
+						>
+							{cat.name}
+						</button>
+					))}
+				</div>
+			</section>
 			{/* Info searching */}
 			<section>
 				<h1 className="text-2xl font-medium text-black">
@@ -48,10 +99,6 @@ export default function SearchPage() {
 						? `Search results for "${keyword}"`
 						: `Category: ${category}`}
 				</h1>
-				<nav className="flex gap-5 mt-7">
-					<button className="btnActive">Dishes</button>
-					<button className="btnSecondary">Restaurants</button>
-				</nav>
 			</section>
 			{/* Dishes */}
 			<section className="flex flex-wrap gap-5 mt-10">

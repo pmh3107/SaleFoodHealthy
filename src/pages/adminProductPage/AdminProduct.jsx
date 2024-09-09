@@ -7,6 +7,7 @@ import {
 	deleteProduct,
 } from "../../service/Product";
 import { toast } from "react-toastify";
+import { getCategory } from "../../service/Category";
 
 const AdminProduct = () => {
 	const [products, setProducts] = useState([]);
@@ -14,7 +15,18 @@ const AdminProduct = () => {
 	const [isEditing, setIsEditing] = useState(false);
 	const [currentProduct, setCurrentProduct] = useState(null);
 	const [form] = Form.useForm();
-	console.log(products.length);
+	const [filteredInfo, setFilteredInfo] = useState({});
+	const [sortedInfo, setSortedInfo] = useState({});
+	const [filters, setFilters] = useState([]);
+
+	const fetchCategories = async () => {
+		const categories = await getCategory();
+		return categories.map((category) => ({
+			text: category.name,
+			value: category.name,
+		}));
+	};
+
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
@@ -25,6 +37,12 @@ const AdminProduct = () => {
 			}
 		};
 		fetchData();
+
+		const loadCategories = async () => {
+			const categoryFilters = await fetchCategories();
+			setFilters(categoryFilters);
+		};
+		loadCategories();
 	}, []);
 
 	const handleAdd = () => {
@@ -50,7 +68,6 @@ const AdminProduct = () => {
 		try {
 			const values = await form.validateFields();
 
-			// Convert relevant fields to numbers
 			const productData = {
 				...values,
 				price: Number(values.price),
@@ -84,16 +101,29 @@ const AdminProduct = () => {
 		setIsModalVisible(false);
 	};
 
+	const handleChange = (pagination, filters, sorter) => {
+		setFilteredInfo(filters);
+		setSortedInfo(sorter);
+	};
+
 	const columns = [
 		{
 			title: "Title",
 			dataIndex: "title",
 			key: "title",
+			sorter: (a, b) => a.title.length - b.title.length,
+			sortOrder: sortedInfo.columnKey === "title" && sortedInfo.order,
 		},
 		{
 			title: "Category",
 			dataIndex: "category",
 			key: "category",
+			filters: filters,
+			filteredValue: filteredInfo.category || null,
+			onFilter: (value, record) =>
+				record.category.toLowerCase() === value.toLowerCase(), // Sửa lại hàm onFilter
+			sorter: (a, b) => a.category.length - b.category.length,
+			sortOrder: sortedInfo.columnKey === "category" && sortedInfo.order,
 		},
 		{
 			title: "Description",
@@ -104,16 +134,22 @@ const AdminProduct = () => {
 			title: "Price",
 			dataIndex: "price",
 			key: "price",
+			sorter: (a, b) => a.price - b.price,
+			sortOrder: sortedInfo.columnKey === "price" && sortedInfo.order,
 		},
 		{
 			title: "Rate",
 			dataIndex: "rate",
 			key: "rate",
+			sorter: (a, b) => a.rate - b.rate,
+			sortOrder: sortedInfo.columnKey === "rate" && sortedInfo.order,
 		},
 		{
 			title: "Time Cook",
 			dataIndex: "timeCook",
 			key: "timeCook",
+			sorter: (a, b) => a.timeCook - b.timeCook,
+			sortOrder: sortedInfo.columnKey === "timeCook" && sortedInfo.order,
 		},
 		{
 			title: "Image",
@@ -155,7 +191,12 @@ const AdminProduct = () => {
 			>
 				Add Product
 			</Button>
-			<Table columns={columns} dataSource={products} rowKey="id" />
+			<Table
+				columns={columns}
+				dataSource={products}
+				rowKey="id"
+				onChange={handleChange}
+			/>
 			<Modal
 				title={isEditing ? "Edit Product" : "Add Product"}
 				visible={isModalVisible}

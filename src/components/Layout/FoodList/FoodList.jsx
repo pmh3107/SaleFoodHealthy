@@ -8,7 +8,7 @@ const FoodList = ({ products }) => {
 		.slice(0, 4);
 
 	return (
-		<div className="flex ">
+		<div className="flex flex-col gap-8 lg:flex-row">
 			<div className="flex flex-col gap-8">
 				<h2 className="text-[#202020] text-2xl font-medium">
 					High class food above 4 stars

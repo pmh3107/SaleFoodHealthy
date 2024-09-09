@@ -19,24 +19,24 @@ function Category() {
 	}, []);
 
 	return (
-		<div className="max-w-screen-2xl mx-auto px-12 ">
-			<h2 className="text-[#202020] text-2xl font-medium mb-7">
+		<div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+			<h2 className="text-[#202020] text-2xl font-medium mb-7 text-center sm:text-left">
 				What’s on your mind?
 			</h2>
 			{/* Categories */}
-			<ul className="flex justify-between items-center">
+			<ul className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
 				{categoryList.map((item) => (
-					<li key={item.id} className="p-6 ">
+					<li key={item.id} className="p-4">
 						<button
 							onClick={() => navigate(`/searchPage?category=${item.name}`)}
-							className="flex flex-col items-center gap-6 justify-center"
+							className="flex flex-col items-center gap-4 justify-center"
 						>
 							<img
-								className="w-40 h-40 rounded-full object-cover"
+								className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full object-cover"
 								src={item.imgPath}
 								alt={item.name}
 							/>
-							<span className="block w-full text-black text-center text-base font-medium">
+							<span className="block w-full text-black text-center text-sm sm:text-base font-medium">
 								{item.name}
 							</span>
 						</button>

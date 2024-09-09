@@ -4,7 +4,7 @@ function SearchByRestaurant() {
 	const navigate = useNavigate();
 
 	return (
-		<div className="bg-[#FC8019] my-28">
+		<div className="bg-[#FC8019] my-28 max-md:hidden">
 			<div className="max-w-screen-2xl mx-auto py-20 flex gap-8 items-center justify-center">
 				<h2 className="flex items-center justify-center text-white text-2xl font-semibold gap-7">
 					Search by Restaurant <img src="/images/search.svg" alt="" />

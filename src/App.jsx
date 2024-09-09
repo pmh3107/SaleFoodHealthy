@@ -14,6 +14,8 @@ const OrderSummaryPage = lazy(() =>
 );
 const PaymentPage = lazy(() => import("./pages/paymentPage/PaymentPage"));
 const UserPage = lazy(() => import("./pages/userPage/UserPage"));
+const AboutUs = lazy(() => import("./pages/aboutUsPage/AboutUs"));
+const ContactPage = lazy(() => import("./pages/contactPage/ContactPage"));
 const LoginPage = lazy(() => import("./pages/loginPage/LoginPage"));
 const Login = lazy(() => import("./components/Layout/LogInSignUp/LogIn"));
 const SignUp = lazy(() => import("./components/Layout/LogInSignUp/SignUp"));
@@ -44,12 +46,15 @@ export default function App() {
 								<Route path="paymentPage" element={<PaymentPage />} />
 								<Route path="OrderSummaryPage" element={<OrderSummaryPage />} />
 								<Route path="userPage" element={<UserPage />} />
+								<Route path="aboutUs" element={<AboutUs />} />
+								<Route path="contact" element={<ContactPage />} />
 								<Route path="*" element={<ErrorPage />} />
 							</Route>
 							<Route path="loginPage" element={<LoginPage />}>
 								<Route index element={<Login />} />
 								<Route path="signUp" element={<SignUp />} />
 							</Route>
+
 							<Route path="loginAdminPage" element={<LoginAdminPage />} />
 							<Route
 								path="/admin"

@@ -5,7 +5,7 @@ import {
 	updateOrder,
 	deleteOrder,
 	updateOrderStatus,
-	removeOrderFromUserOrders, // Add this import statement
+	removeOrderFromUserOrders,
 } from "../../service/Order";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -19,16 +19,19 @@ const { Option } = Select;
 
 const AdminOrder = () => {
 	const [orders, setOrders] = useState([]);
+	const [allOrders, setAllOrders] = useState([]); // Thêm state để lưu trữ tất cả đơn hàng
 	const [isModalVisible, setIsModalVisible] = useState(false);
 	const [isEditing, setIsEditing] = useState(false);
 	const [currentOrder, setCurrentOrder] = useState(null);
 	const [form] = Form.useForm();
-	console.log(orders);
+	const [searchName, setSearchName] = useState("");
+
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				const data = await getOrders();
 				setOrders(data);
+				setAllOrders(data); // Lưu trữ tất cả đơn hàng vào state allOrders
 			} catch (error) {
 				console.error("Error fetching data:", error);
 			}
@@ -45,24 +48,15 @@ const AdminOrder = () => {
 
 	const handleDelete = async (id) => {
 		try {
-			// Ensure currentOrder is set before accessing userId
 			if (!currentOrder) {
 				console.error("No current order selected for deletion.");
 				return;
 			}
-
-			// Xóa đơn hàng từ collection orders
 			await deleteOrder(id);
-
-			// Lấy userId từ đơn hàng hiện tại
-			const userId = currentOrder.userId; // Điều chỉnh dòng này dựa trên cấu trúc dữ liệu của bạn
-
-			// Xóa ID đơn hàng khỏi collection user/orders
-			await removeOrderFromUserOrders(userId, id); // Hàm này cần được định nghĩa để xóa ID đơn hàng
-
-			// Cập nhật trạng thái local
+			const userId = currentOrder.userId;
+			await removeOrderFromUserOrders(userId, id);
 			setOrders((prevOrders) => prevOrders.filter((item) => item.id !== id));
-			setCurrentOrder(null); // Reset currentOrder after deletion
+			setCurrentOrder(null);
 		} catch (error) {
 			console.error("Error deleting order:", error);
 		}
@@ -99,6 +93,18 @@ const AdminOrder = () => {
 		}
 	};
 
+	const handleSearch = () => {
+		const filteredOrders = allOrders.filter((order) =>
+			order.name.toLowerCase().includes(searchName.toLowerCase())
+		);
+		setOrders(filteredOrders);
+	};
+
+	const handleReset = () => {
+		setOrders(allOrders);
+		setSearchName("");
+	};
+
 	const columns = [
 		{
 			title: "Order ID",
@@ -111,7 +117,7 @@ const AdminOrder = () => {
 			key: "name",
 		},
 		{
-			title: `Dishes`,
+			title: "Dishes",
 			dataIndex: "dishes",
 			key: "dishes",
 			render: (dishes) => (
@@ -139,7 +145,7 @@ const AdminOrder = () => {
 				<Select
 					defaultValue={text}
 					style={{ width: 120 }}
-					onChange={(value) => handleUpdateStatus(record.id, value)} // Update status on change
+					onChange={(value) => handleUpdateStatus(record.id, value)}
 				>
 					<Option value="Pending">Pending</Option>
 					<Option value="In Process">In Process</Option>
@@ -176,13 +182,21 @@ const AdminOrder = () => {
 		<main className="w-5/6 h-screen">
 			<article className="px-10 py-16 flex flex-col gap-4">
 				<h1 className="text-3xl font-bold text-orange-500 text-center">
-					{" "}
 					<FontAwesomeIcon icon={faBarsProgress} className="mr-2" />
 					Order Management
 				</h1>
 				<p className="text-xl text-center font-normal">
 					Number of Orders: <strong>{orders.length}</strong>
 				</p>
+				<div className="flex gap-4 justify-center">
+					<Input
+						placeholder="Enter name to search"
+						value={searchName}
+						onChange={(e) => setSearchName(e.target.value)}
+					/>
+					<Button onClick={handleSearch}>Search</Button>
+					<Button onClick={handleReset}>Reset</Button>
+				</div>
 			</article>
 			<section className="px-10">
 				<h2 className="text-2xl font-semibold my-3">

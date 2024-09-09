@@ -4,18 +4,18 @@ import { Link } from "react-router-dom";
 
 export default function Footer() {
 	return (
-		<footer className="bg-[#FC8019] text-white">
-			<div className="h-80 max-w-screen-2xl mx-auto px-12 mt-16 flex items-center justify-center flex-col">
-				<div className="w-full flex justify-between items-center">
+		<footer className="bg-[#FC8019] text-white py-12 max-md:py-6">
+			<div className="h-auto max-w-screen-2xl mx-auto px-6 sm:px-12 mt-16 flex flex-col items-center justify-center">
+				<div className="w-full flex flex-col sm:flex-row justify-between items-center">
 					{/* Logo */}
-					<div className="flex items-center gap-2">
+					<div className="flex items-center gap-2 mb-4 sm:mb-0">
 						<FontAwesomeIcon className="text-2xl" icon={faPlateWheat} />
 						<h1 className="font-bold text-2xl">FreshFOOD</h1>
 					</div>
 
 					{/* Navigation Links */}
-					<nav aria-label="Footer Navigation">
-						<ul className="flex gap-16 text-base font-medium">
+					<nav aria-label="Footer Navigation" className="mb-4 sm:mb-0">
+						<ul className="flex flex-col sm:flex-row gap-4 sm:gap-16 text-base font-medium">
 							<li className="hover:opacity-50">
 								<Link to={"/about"}>About Us</Link>
 							</li>

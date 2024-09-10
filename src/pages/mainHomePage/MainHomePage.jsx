@@ -6,6 +6,7 @@ import AllFoods from "../../components/Layout/FoodList/AllFoods";
 import Loading from "../../components/common/Loading";
 import { useEffect, useState } from "react";
 import { getProducts } from "../../service/Product";
+import Chatbox from "../../components/Layout/ChatBox/ChatBox";
 
 export default function MainHomePage() {
 	const [products, setProducts] = useState(null);
@@ -35,6 +36,7 @@ export default function MainHomePage() {
 			<SearchByRestaurant />
 			<Category />
 			<AllFoods products={products} />
+			<Chatbox /> {/* Thêm Chatbox ở đây */}
 		</main>
 	);
 }
